@@ -1,0 +1,210 @@
+import { createClient } from '@supabase/supabase-js';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+// Client-side Supabase client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Server-side Supabase client with service role key
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
+
+// Server-side Supabase client for SSR
+export function createServerSupabaseClient() {
+  const cookieStore = cookies();
+
+  return createServerClient(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            // The `delete` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  );
+}
+
+// Database types
+export interface Database {
+  public: {
+    Tables: {
+      organizations: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          plan: string;
+          stripe_customer_id: string | null;
+          settings: Record<string, any>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          plan?: string;
+          stripe_customer_id?: string | null;
+          settings?: Record<string, any>;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          plan?: string;
+          stripe_customer_id?: string | null;
+          settings?: Record<string, any>;
+          updated_at?: string;
+        };
+      };
+      users: {
+        Row: {
+          id: string;
+          email: string;
+          name: string | null;
+          avatar_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          name?: string | null;
+          avatar_url?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          name?: string | null;
+          avatar_url?: string | null;
+          updated_at?: string;
+        };
+      };
+      organization_members: {
+        Row: {
+          id: string;
+          user_id: string;
+          organization_id: string;
+          role: 'owner' | 'admin' | 'member';
+          status: 'active' | 'pending' | 'suspended';
+          invited_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          organization_id: string;
+          role: 'owner' | 'admin' | 'member';
+          status?: 'active' | 'pending' | 'suspended';
+          invited_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          organization_id?: string;
+          role?: 'owner' | 'admin' | 'member';
+          status?: 'active' | 'pending' | 'suspended';
+          invited_by?: string | null;
+          updated_at?: string;
+        };
+      };
+      invitations: {
+        Row: {
+          id: string;
+          email: string;
+          organization_id: string;
+          role: 'owner' | 'admin' | 'member';
+          token: string;
+          expires_at: string;
+          invited_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          organization_id: string;
+          role: 'owner' | 'admin' | 'member';
+          token: string;
+          expires_at: string;
+          invited_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          organization_id?: string;
+          role?: 'owner' | 'admin' | 'member';
+          token?: string;
+          expires_at?: string;
+          invited_by?: string;
+        };
+      };
+      subscriptions: {
+        Row: {
+          id: string;
+          organization_id: string;
+          stripe_subscription_id: string;
+          status: string;
+          plan: string;
+          current_period_end: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          stripe_subscription_id: string;
+          status: string;
+          plan: string;
+          current_period_end: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          stripe_subscription_id?: string;
+          status?: string;
+          plan?: string;
+          current_period_end?: string;
+          updated_at?: string;
+        };
+      };
+    };
+  };
+}
