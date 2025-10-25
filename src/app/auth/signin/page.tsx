@@ -41,7 +41,7 @@ export default function SignIn() {
       } else {
         // Check if user has organizations
         const session = await getSession();
-        if (session?.user?.organizations?.length > 0) {
+        if (session?.user?.organizations && session.user.organizations.length > 0) {
           // Redirect to first organization dashboard
           const firstOrg = session.user.organizations[0];
           router.push(`/${firstOrg.slug}/dashboard`);
@@ -116,7 +116,7 @@ export default function SignIn() {
                       <Checkbox
                         id="remember"
                         checked={rememberMe}
-                        onCheckedChange={setRememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked === true)}
                         className="border-muted-foreground"
                       />
                       <label

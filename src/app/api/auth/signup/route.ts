@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user
-    const user = await createUser(name, email, password);
+    const user = await createUser(email, name);
 
     return NextResponse.json(
       { message: 'User created successfully', user },

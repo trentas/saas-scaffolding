@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth';
 
 import { authOptions , createOrganization } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
-import { isValidTenantSlug } from '@/lib/tenant';
+import { isValidTenantSlug } from '@/lib/tenant-utils';
 
 export async function POST(request: NextRequest) {
   try {

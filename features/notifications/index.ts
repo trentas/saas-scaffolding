@@ -5,7 +5,4 @@ export const NOTIFICATIONS_FEATURE = {
   enabled: false,
 };
 
-// Notification components
-export { default as NotificationsDashboard } from './components/NotificationsDashboard';
-export { default as EmailSettings } from './components/EmailSettings';
-export { default as NotificationHistory } from './components/NotificationHistory';
+// Notification components (to be implemented)

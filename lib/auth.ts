@@ -120,8 +120,11 @@ export const authOptions: NextAuthOptions = {
           .eq('user_id', token.sub)
           .eq('status', 'active');
 
-        session.user.organizations = organizations?.map(member => ({
-          ...member.organizations,
+        session.user.organizations = organizations?.map((member: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+          id: member.organizations.id,
+          name: member.organizations.name,
+          slug: member.organizations.slug,
+          plan: member.organizations.plan,
           role: member.role,
         })) || [];
       }
@@ -139,7 +142,6 @@ export const authOptions: NextAuthOptions = {
 
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
   },
 
   session: {

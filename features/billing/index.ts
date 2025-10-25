@@ -9,5 +9,3 @@ export const BILLING_FEATURE = {
 
 // Billing components
 export { default as BillingDashboard } from './components/BillingDashboard';
-export { default as SubscriptionPlans } from './components/SubscriptionPlans';
-export { default as UsageMetrics } from './components/UsageMetrics';
