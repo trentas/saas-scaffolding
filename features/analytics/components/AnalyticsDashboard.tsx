@@ -1,12 +1,8 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface AnalyticsDashboardProps {
-  organizationId: string;
-}
-
-export default function AnalyticsDashboard({ organizationId }: AnalyticsDashboardProps) {
+export default function AnalyticsDashboard() {
   return (
     <div className="space-y-6">
       <div>

@@ -1,8 +1,8 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface BillingDashboardProps {
   organizationId: string;
@@ -11,7 +11,6 @@ interface BillingDashboardProps {
 }
 
 export default function BillingDashboard({
-  organizationId,
   currentPlan,
   subscriptionStatus,
 }: BillingDashboardProps) {

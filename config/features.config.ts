@@ -64,7 +64,7 @@ export const featuresConfig: Record<string, FeatureConfig> = {
 
 export const getEnabledFeatures = (): string[] => {
   return Object.entries(featuresConfig)
-    .filter(([_, config]) => config.enabled)
+    .filter(([, config]) => config.enabled)
     .map(([key]) => key);
 };
 
