@@ -5,7 +5,4 @@ export const WEBHOOKS_FEATURE = {
   enabled: false,
 };
 
-// Webhook components
-export { default as WebhooksDashboard } from './components/WebhooksDashboard';
-export { default as CreateWebhook } from './components/CreateWebhook';
-export { default as WebhookList } from './components/WebhookList';
+// Webhook components (to be implemented)

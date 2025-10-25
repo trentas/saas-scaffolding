@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { generateTenantSlug, isValidTenantSlug } from '@/lib/tenant';
+import { generateTenantSlug, isValidTenantSlug } from '@/lib/tenant-utils';
 
 export default function Setup() {
   const { data: session, status } = useSession();
@@ -33,7 +33,7 @@ export default function Setup() {
     }
 
     // If user already has organizations, redirect to dashboard
-    if (session.user?.organizations?.length > 0) {
+    if (session.user?.organizations && session.user.organizations.length > 0) {
       const firstOrg = session.user.organizations[0];
       router.push(`/${firstOrg.slug}/dashboard`);
     }

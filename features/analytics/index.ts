@@ -7,5 +7,3 @@ export const ANALYTICS_FEATURE = {
 
 // Analytics components
 export { default as AnalyticsDashboard } from './components/AnalyticsDashboard';
-export { default as UsageChart } from './components/UsageChart';
-export { default as MetricsOverview } from './components/MetricsOverview';

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getTenantFromRequest } from './lib/tenant';
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Skip middleware for static files, API routes, and auth pages
@@ -17,7 +17,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  const tenantContext = getTenantFromRequest();
+  const tenantContext = await getTenantFromRequest();
   
   // If no tenant detected and not on root pages, continue
   if (!tenantContext.tenant && !pathname.startsWith('/')) {

@@ -10,9 +10,9 @@ import { checkTenantAccess } from '@/lib/tenant';
 
 interface TenantLayoutProps {
   children: React.ReactNode;
-  params: {
+  params: Promise<{
     tenant: string;
-  };
+  }>;
 }
 
 export default async function TenantLayout({
@@ -25,15 +25,17 @@ export default async function TenantLayout({
     redirect('/auth/signin');
   }
 
+  const { tenant } = await params;
+
   // Check if user has access to this tenant
-  const { hasAccess, role } = await checkTenantAccess(params.tenant, session.user.id);
+  const { hasAccess, role } = await checkTenantAccess(tenant, session.user.id);
   
   if (!hasAccess) {
     notFound();
   }
 
   return (
-    <TenantProvider tenant={params.tenant} role={role}>
+    <TenantProvider tenant={tenant} role={role || 'member'}>
       <div className="min-h-screen bg-background">
         <TenantNavbar />
         <div className="flex">
