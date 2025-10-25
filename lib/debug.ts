@@ -33,7 +33,7 @@ class Logger {
     return level <= this.level;
   }
 
-  private formatMessage(level: string, message: string, data?: any): string {
+  private formatMessage(level: string, message: string, data?: unknown): string {
     const timestamp = new Date().toISOString();
     const prefix = `[${timestamp}] [${level}]`;
     
@@ -43,35 +43,35 @@ class Logger {
     return `${prefix} ${message}`;
   }
 
-  error(message: string, data?: any): void {
+  error(message: string, data?: unknown): void {
     if (this.shouldLog(LogLevel.ERROR)) {
       // eslint-disable-next-line no-console
       console.error(this.formatMessage('ERROR', message, data));
     }
   }
 
-  warn(message: string, data?: any): void {
+  warn(message: string, data?: unknown): void {
     if (this.shouldLog(LogLevel.WARN)) {
       // eslint-disable-next-line no-console
       console.warn(this.formatMessage('WARN', message, data));
     }
   }
 
-  info(message: string, data?: any): void {
+  info(message: string, data?: unknown): void {
     if (this.shouldLog(LogLevel.INFO)) {
       // eslint-disable-next-line no-console
       console.log(this.formatMessage('INFO', message, data));
     }
   }
 
-  debug(message: string, data?: any): void {
+  debug(message: string, data?: unknown): void {
     if (this.shouldLog(LogLevel.DEBUG)) {
       // eslint-disable-next-line no-console
       console.log(this.formatMessage('DEBUG', message, data));
     }
   }
 
-  trace(message: string, data?: any): void {
+  trace(message: string, data?: unknown): void {
     if (this.shouldLog(LogLevel.TRACE)) {
       // eslint-disable-next-line no-console
       console.log(this.formatMessage('TRACE', message, data));
@@ -79,27 +79,27 @@ class Logger {
   }
 
   // Specialized logging methods
-  auth(message: string, data?: any): void {
+  auth(message: string, data?: unknown): void {
     this.debug(`[AUTH] ${message}`, data);
   }
 
-  email(message: string, data?: any): void {
+  email(message: string, data?: unknown): void {
     this.debug(`[EMAIL] ${message}`, data);
   }
 
-  database(message: string, data?: any): void {
+  database(message: string, data?: unknown): void {
     this.debug(`[DATABASE] ${message}`, data);
   }
 
-  api(message: string, data?: any): void {
+  api(message: string, data?: unknown): void {
     this.debug(`[API] ${message}`, data);
   }
 
-  security(message: string, data?: any): void {
+  security(message: string, data?: unknown): void {
     this.warn(`[SECURITY] ${message}`, data);
   }
 
-  performance(message: string, data?: any): void {
+  performance(message: string, data?: unknown): void {
     this.info(`[PERFORMANCE] ${message}`, data);
   }
 }
@@ -108,12 +108,12 @@ class Logger {
 export const logger = new Logger();
 
 // Helper functions for common debugging scenarios
-export const debugAuth = (message: string, data?: any) => logger.auth(message, data);
-export const debugEmail = (message: string, data?: any) => logger.email(message, data);
-export const debugDatabase = (message: string, data?: any) => logger.database(message, data);
-export const debugApi = (message: string, data?: any) => logger.api(message, data);
-export const debugSecurity = (message: string, data?: any) => logger.security(message, data);
-export const debugPerformance = (message: string, data?: any) => logger.performance(message, data);
+export const debugAuth = (message: string, data?: unknown) => logger.auth(message, data);
+export const debugEmail = (message: string, data?: unknown) => logger.email(message, data);
+export const debugDatabase = (message: string, data?: unknown) => logger.database(message, data);
+export const debugApi = (message: string, data?: unknown) => logger.api(message, data);
+export const debugSecurity = (message: string, data?: unknown) => logger.security(message, data);
+export const debugPerformance = (message: string, data?: unknown) => logger.performance(message, data);
 
 // Request timing utility
 export class RequestTimer {
@@ -126,7 +126,7 @@ export class RequestTimer {
     logger.trace(`[TIMER] Started: ${operation}`);
   }
 
-  end(data?: any): void {
+  end(data?: unknown): void {
     const duration = performance.now() - this.startTime;
     logger.performance(`[TIMER] Completed: ${this.operation}`, {
       duration: `${duration.toFixed(2)}ms`,

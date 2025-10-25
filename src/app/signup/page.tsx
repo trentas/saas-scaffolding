@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { FcGoogle } from "react-icons/fc";
@@ -47,7 +48,7 @@ const Signup = () => {
       } else {
         setError(data.message || "Failed to create account");
       }
-    } catch (error) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -56,7 +57,7 @@ const Signup = () => {
 
   const handleGoogleSignUp = () => {
     // Google signup logic would go here
-    console.log("Google signup clicked");
+    // TODO: Implement Google OAuth signup
   };
   return (
     <Background>

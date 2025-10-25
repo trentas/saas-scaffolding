@@ -103,7 +103,7 @@ export const authOptions: NextAuthOptions = {
   ],
   
   callbacks: {
-    async signIn({ user, account, credentials }) {
+    async signIn() {
       // This callback is called before the authorize function
       return true;
     },
@@ -153,7 +153,10 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        return true;
+        if (user) {
+          token.id = user.id;
+        }
+        return token;
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Sign in error:', error);
@@ -190,13 +193,6 @@ export const authOptions: NextAuthOptions = {
       }
 
       return session;
-    },
-
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
     },
   },
 

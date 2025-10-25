@@ -4,8 +4,8 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
 import { createUser } from '@/lib/auth';
-import { sendVerificationEmail } from '@/lib/email';
 import { debugApi, logError, RequestTimer } from '@/lib/debug';
+import { sendVerificationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   const timer = new RequestTimer('POST /api/auth/signup');

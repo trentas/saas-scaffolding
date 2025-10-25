@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
+
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+import { signIn, getSession } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 
 import { Background } from "@/components/background";
@@ -59,7 +60,7 @@ const Login = () => {
           router.push("/setup");
         }
       }
-    } catch (error) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
@@ -93,7 +94,7 @@ const Login = () => {
       } else {
         setResendMessage(data.message || "Failed to send verification email.");
       }
-    } catch (error) {
+    } catch {
       setResendMessage("An error occurred. Please try again.");
     }
   };
