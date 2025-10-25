@@ -153,10 +153,10 @@ export function requirePermission(
   resource: string,
   action: string
 ) {
-  return function(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function(target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     
-    descriptor.value = function(...args: any[]) {
+    descriptor.value = function(...args: unknown[]) {
       if (!hasPermission(role, resource, action)) {
         throw new Error(`Insufficient permissions: ${role} cannot ${action} ${resource}`);
       }

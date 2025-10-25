@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+
 import { supabaseAdmin } from './supabase';
 
 // Initialize Stripe
@@ -53,6 +54,7 @@ export async function createStripeCustomer(email: string, name: string) {
 
     return customer;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error creating Stripe customer:', error);
     throw error;
   }
@@ -86,6 +88,7 @@ export async function createSubscription(
 
     return subscription;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error creating subscription:', error);
     throw error;
   }
@@ -106,6 +109,7 @@ export async function cancelSubscription(subscriptionId: string) {
 
     return subscription;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error canceling subscription:', error);
     throw error;
   }
@@ -117,6 +121,7 @@ export async function getSubscription(subscriptionId: string) {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     return subscription;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error retrieving subscription:', error);
     throw error;
   }
@@ -132,6 +137,7 @@ export async function createBillingPortalSession(customerId: string, returnUrl: 
 
     return session;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error creating billing portal session:', error);
     throw error;
   }
@@ -161,6 +167,7 @@ export async function createCheckoutSession(
 
     return session;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error creating checkout session:', error);
     throw error;
   }
@@ -184,9 +191,11 @@ export async function handleStripeWebhook(event: Stripe.Event) {
         await handlePaymentFailed(event.data.object as Stripe.Invoice);
         break;
       default:
+        // eslint-disable-next-line no-console
         console.log(`Unhandled event type: ${event.type}`);
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error handling webhook:', error);
     throw error;
   }
@@ -204,6 +213,7 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
         current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error updating subscription:', error);
     throw error;
   }
@@ -219,6 +229,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
       })
       .eq('stripe_subscription_id', subscription.id);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error updating canceled subscription:', error);
     throw error;
   }
@@ -236,6 +247,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
         .eq('stripe_subscription_id', invoice.subscription as string);
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error updating payment status:', error);
     throw error;
   }
@@ -253,6 +265,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
         .eq('stripe_subscription_id', invoice.subscription as string);
     }
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error updating payment status:', error);
     throw error;
   }

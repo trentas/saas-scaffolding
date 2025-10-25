@@ -124,6 +124,7 @@ export async function checkTenantAccess(
     
     return { hasAccess: true, role: membership.role };
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error checking tenant access:', error);
     return { hasAccess: false };
   }
@@ -160,6 +161,7 @@ export async function getUserOrganizations(userId: string) {
       role: member.role,
     })) || [];
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error getting user organizations:', error);
     return [];
   }

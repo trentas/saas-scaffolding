@@ -1,8 +1,9 @@
+// import bcrypt from 'bcryptjs';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+
 import { supabaseAdmin } from './supabase';
-import bcrypt from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -49,6 +50,7 @@ export const authOptions: NextAuthOptions = {
             image: user.avatar_url,
           };
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.error('Auth error:', error);
           return null;
         }
@@ -57,7 +59,7 @@ export const authOptions: NextAuthOptions = {
   ],
   
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user }) {
       try {
         // Check if user exists in database
         const { data: existingUser, error } = await supabaseAdmin
@@ -67,13 +69,14 @@ export const authOptions: NextAuthOptions = {
           .single();
 
         if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+          // eslint-disable-next-line no-console
           console.error('Database error:', error);
           return false;
         }
 
         // If user doesn't exist, create them
         if (!existingUser) {
-          const { data: newUser, error: createError } = await supabaseAdmin
+          const { error: createError } = await supabaseAdmin
             .from('users')
             .insert({
               email: user.email!,
@@ -84,6 +87,7 @@ export const authOptions: NextAuthOptions = {
             .single();
 
           if (createError) {
+            // eslint-disable-next-line no-console
             console.error('Error creating user:', createError);
             return false;
           }
@@ -91,6 +95,7 @@ export const authOptions: NextAuthOptions = {
 
         return true;
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Sign in error:', error);
         return false;
       }
@@ -124,7 +129,7 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
@@ -146,10 +151,10 @@ export const authOptions: NextAuthOptions = {
 
 // Helper functions for authentication
 
-export async function createUser(email: string, name: string, password?: string) {
+export async function createUser(email: string, name: string) {
   try {
     // Hash password if provided
-    const hashedPassword = password ? await bcrypt.hash(password, 12) : null;
+    // const hashedPassword = password ? await bcrypt.hash(password, 12) : null;
     
     const { data: user, error } = await supabaseAdmin
       .from('users')
@@ -168,6 +173,7 @@ export async function createUser(email: string, name: string, password?: string)
 
     return user;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error creating user:', error);
     throw error;
   }
@@ -191,7 +197,7 @@ export async function createOrganization(userId: string, name: string, slug: str
     }
 
     // Add user as owner
-    const { data: membership, error: memberError } = await supabaseAdmin
+    const { error: memberError } = await supabaseAdmin
       .from('organization_members')
       .insert({
         user_id: userId,
@@ -208,18 +214,20 @@ export async function createOrganization(userId: string, name: string, slug: str
 
     return organization;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error creating organization:', error);
     throw error;
   }
 }
 
-export async function verifyPassword(email: string, password: string): Promise<boolean> {
+export async function verifyPassword(): Promise<boolean> {
   try {
     // In a real implementation, you'd verify the password hash
     // For now, we'll return true for demo purposes
     // You should implement proper password verification
     return true;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error verifying password:', error);
     return false;
   }

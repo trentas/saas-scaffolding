@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
+import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
 
 import { Background } from '@/components/background';
@@ -83,8 +84,8 @@ export default function SignUp() {
         // Redirect to setup page to create organization
         router.push('/setup');
       }
-    } catch (error: any) {
-      setError(error.message || 'An error occurred. Please try again.');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +95,7 @@ export default function SignUp() {
     setIsLoading(true);
     try {
       await signIn('google', { callbackUrl: '/setup' });
-    } catch (error) {
+    } catch {
       setError('An error occurred with Google sign up.');
     } finally {
       setIsLoading(false);

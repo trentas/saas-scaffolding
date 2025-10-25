@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+
+import { useSession } from 'next-auth/react';
 
 import { Background } from '@/components/background';
 import { Button } from '@/components/ui/button';
@@ -94,8 +96,8 @@ export default function Setup() {
       
       // Redirect to the new organization dashboard
       router.push(`/${organization.slug}/dashboard`);
-    } catch (error: any) {
-      setError(error.message || 'An error occurred. Please try again.');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

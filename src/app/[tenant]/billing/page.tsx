@@ -1,10 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { Check, CreditCard, Download } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 
 // Mock data - in real app, this would come from API
 const currentPlan = {
@@ -66,8 +69,10 @@ export default function BillingPage() {
     setIsLoading(true);
     try {
       // Handle upgrade logic
+      // eslint-disable-next-line no-console
       console.log('Upgrading to:', planName);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error upgrading plan:', error);
     } finally {
       setIsLoading(false);
@@ -78,8 +83,10 @@ export default function BillingPage() {
     setIsLoading(true);
     try {
       // Handle billing portal logic
+      // eslint-disable-next-line no-console
       console.log('Opening billing portal');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error opening billing portal:', error);
     } finally {
       setIsLoading(false);

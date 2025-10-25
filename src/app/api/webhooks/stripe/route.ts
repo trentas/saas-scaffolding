@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { stripe, handleStripeWebhook } from '@/lib/stripe';
 import { headers } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+
+import { stripe, handleStripeWebhook } from '@/lib/stripe';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,10 +26,11 @@ export async function POST(request: NextRequest) {
     await handleStripeWebhook(event);
 
     return NextResponse.json({ received: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
     console.error('Stripe webhook error:', error);
     
-    if (error.type === 'StripeSignatureVerificationError') {
+    if (error && typeof error === 'object' && 'type' in error && error.type === 'StripeSignatureVerificationError') {
       return NextResponse.json(
         { message: 'Invalid signature' },
         { status: 400 }

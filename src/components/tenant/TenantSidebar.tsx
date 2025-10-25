@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useTenant } from './TenantProvider';
-import { cn } from '@/lib/utils';
+
 import {
   LayoutDashboard,
   Users,
@@ -14,6 +13,10 @@ import {
   Key,
   Webhook,
 } from 'lucide-react';
+
+import { useTenant } from './TenantProvider';
+
+import { cn } from '@/lib/utils';
 
 interface NavItem {
   title: string;

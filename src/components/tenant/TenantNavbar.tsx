@@ -1,7 +1,12 @@
 'use client';
 
+import { LogOut, Settings, User } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+
 import { useTenant } from './TenantProvider';
+
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,9 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { LogOut, Settings, User } from 'lucide-react';
 
 export function TenantNavbar() {
   const { data: session } = useSession();

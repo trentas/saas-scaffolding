@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { createOrganization } from '@/lib/auth';
-import { isValidTenantSlug } from '@/lib/tenant';
+
+import { authOptions , createOrganization } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
+import { isValidTenantSlug } from '@/lib/tenant';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if slug is already taken
-    const { data: existingOrg, error: checkError } = await supabaseAdmin
+    const { data: existingOrg } = await supabaseAdmin
       .from('organizations')
       .select('id')
       .eq('slug', slug)
@@ -52,11 +53,12 @@ export async function POST(request: NextRequest) {
     const organization = await createOrganization(session.user.id, name, slug);
 
     return NextResponse.json(organization, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
     console.error('Organization creation error:', error);
     
     // Handle unique constraint violation
-    if (error.code === '23505') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
       return NextResponse.json(
         { message: 'Organization slug is already taken' },
         { status: 409 }
@@ -70,7 +72,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
@@ -108,7 +110,8 @@ export async function GET(request: NextRequest) {
     })) || [];
 
     return NextResponse.json(formattedOrganizations);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
     console.error('Get organizations error:', error);
     return NextResponse.json(
       { message: 'Internal server error' },

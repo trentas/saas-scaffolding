@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+// import bcrypt from 'bcryptjs';
+
 import { createUser } from '@/lib/auth';
-import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,11 +40,12 @@ export async function POST(request: NextRequest) {
       { message: 'User created successfully', user },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
+    // eslint-disable-next-line no-console
     console.error('Signup error:', error);
     
     // Handle unique constraint violation
-    if (error.code === '23505') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
       return NextResponse.json(
         { message: 'Email already exists' },
         { status: 409 }

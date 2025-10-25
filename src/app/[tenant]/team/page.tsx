@@ -1,19 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
+
+import { MoreHorizontal, UserPlus, Mail } from 'lucide-react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, UserPlus, Mail } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
 
 // Mock data - in real app, this would come from API
 const teamMembers = [
@@ -56,9 +59,11 @@ export default function TeamPage() {
     
     try {
       // Handle invite logic
+      // eslint-disable-next-line no-console
       console.log('Inviting:', inviteEmail);
       setInviteEmail('');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error inviting user:', error);
     } finally {
       setIsInviting(false);

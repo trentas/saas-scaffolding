@@ -1,10 +1,11 @@
 'use client';
 
+import { Users, CreditCard, Activity, TrendingUp } from 'lucide-react';
+
 import { useTenant } from '@/components/tenant/TenantProvider';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, CreditCard, Activity, TrendingUp } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function DashboardPage() {
   const { tenant, role } = useTenant();

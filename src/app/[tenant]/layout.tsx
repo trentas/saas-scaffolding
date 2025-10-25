@@ -1,10 +1,12 @@
 import { notFound, redirect } from 'next/navigation';
+
 import { getServerSession } from 'next-auth';
+
+import { TenantNavbar } from '@/components/tenant/TenantNavbar';
+import { TenantProvider } from '@/components/tenant/TenantProvider';
+import { TenantSidebar } from '@/components/tenant/TenantSidebar';
 import { authOptions } from '@/lib/auth';
 import { checkTenantAccess } from '@/lib/tenant';
-import { TenantProvider } from '@/components/tenant/TenantProvider';
-import { TenantNavbar } from '@/components/tenant/TenantNavbar';
-import { TenantSidebar } from '@/components/tenant/TenantSidebar';
 
 interface TenantLayoutProps {
   children: React.ReactNode;
