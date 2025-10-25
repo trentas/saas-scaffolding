@@ -6,10 +6,12 @@ A production-ready multi-tenant SaaS scaffolding built with Next.js 15, Supabase
 
 ### Core Features
 - ✅ **Multi-tenant Architecture** - Subdomain-based tenant routing (`company.app.com`)
-- ✅ **Authentication** - NextAuth.js with local auth and optional Google OAuth
+- ✅ **Secure Authentication** - NextAuth.js with email verification, password reset, and 2FA
 - ✅ **User Management** - Role-based access control (owner/admin/member)
 - ✅ **Database** - Supabase with Row Level Security (RLS) policies
 - ✅ **Billing** - Stripe integration for subscriptions and payments
+- ✅ **Email System** - Resend.com integration for verification and notifications
+- ✅ **Security Features** - Account locking, strong passwords, session management
 - ✅ **UI Components** - shadcn/ui with Tailwind CSS 4
 - ✅ **Feature Flags** - Modular feature system for easy customization
 
@@ -25,7 +27,9 @@ A production-ready multi-tenant SaaS scaffolding built with Next.js 15, Supabase
 - **Styling**: Tailwind CSS 4, shadcn/ui components
 - **Backend**: Supabase (PostgreSQL + Auth + RLS)
 - **Payments**: Stripe
-- **Authentication**: NextAuth.js
+- **Authentication**: NextAuth.js with database sessions
+- **Email**: Resend.com for transactional emails
+- **Security**: bcrypt for password hashing, account locking, 2FA
 - **Deployment**: Vercel-ready
 
 ## Getting Started
@@ -36,7 +40,8 @@ A production-ready multi-tenant SaaS scaffolding built with Next.js 15, Supabase
 - npm or yarn
 - Supabase account
 - Stripe account (for billing features)
-- Google Cloud Console project (for Google OAuth)
+- Resend.com account (for email functionality)
+- Google Cloud Console project (optional, for Google OAuth)
 
 ### 1. Clone and Install
 

@@ -37,7 +37,13 @@ export default function SignIn() {
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        if (result.error.includes('verify your email')) {
+          setError('Please verify your email before logging in. Check your inbox for a verification link.');
+        } else if (result.error.includes('locked')) {
+          setError('Account is temporarily locked due to too many failed login attempts. Please try again later.');
+        } else {
+          setError('Invalid email or password');
+        }
       } else {
         // Check if user has organizations
         const session = await getSession();
@@ -131,12 +137,39 @@ export default function SignIn() {
                     </Link>
                   </div>
                   {error && (
-                    <p className="text-sm text-red-500">{error}</p>
+                    <div className="text-sm text-red-500">
+                      <p>{error}</p>
+                      {error.includes('verify your email') && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const response = await fetch('/api/auth/resend-verification', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email }),
+                              });
+                              const data = await response.json();
+                              if (response.ok) {
+                                setError('Verification email sent! Check your inbox.');
+                              } else {
+                                setError(data.message || 'Failed to resend verification email');
+                              }
+                            } catch {
+                              setError('Failed to resend verification email');
+                            }
+                          }}
+                          className="text-primary hover:underline mt-1"
+                        >
+                          Resend verification email
+                        </button>
+                      )}
+                    </div>
                   )}
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
                     {isLoading ? 'Signing in...' : 'Sign in'}
                   </Button>
-                  {process.env.GOOGLE_CLIENT_ID && (
+                  {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
                     <Button
                       type="button"
                       variant="outline"

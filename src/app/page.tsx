@@ -1,25 +1,23 @@
 import { Background } from "@/components/background";
-import { FAQ } from "@/components/blocks/faq";
-import { Features } from "@/components/blocks/features";
-import { Hero } from "@/components/blocks/hero";
 import { Logos } from "@/components/blocks/logos";
-import { Pricing } from "@/components/blocks/pricing";
-import { ResourceAllocation } from "@/components/blocks/resource-allocation";
+import { SaasFAQ } from "@/components/blocks/saas-faq";
+import { SaasFeatures } from "@/components/blocks/saas-features";
+import { SaasHero } from "@/components/blocks/saas-hero";
+import { SaasPricing } from "@/components/blocks/saas-pricing";
 import { Testimonials } from "@/components/blocks/testimonials";
 
 export default function Home() {
   return (
     <>
       <Background className="via-muted to-muted/80">
-        <Hero />
+        <SaasHero />
         <Logos />
-        <Features />
-        <ResourceAllocation />
+        <SaasFeatures />
       </Background>
       <Testimonials />
       <Background variant="bottom">
-        <Pricing />
-        <FAQ />
+        <SaasPricing />
+        <SaasFAQ />
       </Background>
     </>
   );

@@ -71,19 +71,15 @@ export default function SignUp() {
         throw new Error(errorData.message || 'Failed to create account');
       }
 
-      // Sign in the user
-      const result = await signIn('credentials', {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('Account created but failed to sign in');
-      } else {
-        // Redirect to setup page to create organization
-        router.push('/setup');
-      }
+      const responseData = await response.json();
+      
+      // Show success message and don't auto-login
+      setError(`Account created successfully! ${responseData.message}`);
+      
+      // Redirect to signin page after a delay
+      setTimeout(() => {
+        router.push('/auth/signin');
+      }, 3000);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred. Please try again.');
     } finally {
@@ -177,7 +173,7 @@ export default function SignUp() {
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
                     {isLoading ? 'Creating account...' : 'Create account'}
                   </Button>
-                  {process.env.GOOGLE_CLIENT_ID && (
+                  {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
                     <Button
                       type="button"
                       variant="outline"

@@ -104,7 +104,36 @@ The RLS policies are included in the migration files. Make sure they're applied 
    - `invoice.payment_failed`
 5. Copy the webhook secret
 
-### Google OAuth Configuration
+### Email Configuration (Required)
+
+This application uses Resend.com for email delivery. You'll need to set up Resend to enable email functionality:
+
+#### 1. Resend Setup
+
+1. Sign up for a free account at [resend.com](https://resend.com)
+2. Verify your domain or use the sandbox domain for testing
+3. Generate an API key from your dashboard
+
+#### 2. Environment Variables
+
+Add these to your `.env.local` file:
+
+```bash
+RESEND_API_KEY=re_...
+EMAIL_FROM=noreply@yourdomain.com
+NEXT_PUBLIC_APP_NAME="Your SaaS Name"
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+#### 3. Email Features
+
+The system includes:
+- Email verification for new accounts (mandatory before login)
+- Password reset via magic links
+- Two-factor authentication codes
+- Account notifications
+
+### Google OAuth Configuration (Optional)
 
 #### 1. Google Cloud Console Setup
 
@@ -120,6 +149,8 @@ The RLS policies are included in the migration files. Make sure they're applied 
    - `http://localhost:3000/api/auth/callback/google` (development)
    - `https://yourdomain.com/api/auth/callback/google` (production)
 3. Copy the client ID and client secret
+
+**Note**: Google OAuth is optional. If you don't configure it, the Google sign-in buttons will not appear.
 
 ### Feature Configuration
 

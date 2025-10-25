@@ -11,7 +11,9 @@
     "format": "prettier -w .",
     "db:reset": "supabase db reset",
     "db:migrate": "supabase db push",
-    "db:generate-types": "supabase gen types typescript --local > lib/database.types.ts"
+    "db:generate-types": "supabase gen types typescript --local > lib/database.types.ts",
+    "debug:test": "node scripts/test-debug.js",
+    "debug:level": "DEBUG_LEVEL=TRACE npm run dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -51,6 +53,7 @@
     "react-fast-marquee": "^1.6.5",
     "react-hook-form": "^7.65.0",
     "react-icons": "^5.5.0",
+    "resend": "^6.2.2",
     "stripe": "^14.21.0",
     "tailwind-merge": "^3.3.1",
     "uuid": "^9.0.1",
