@@ -1,7 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 
 import { getServerSession } from 'next-auth/next';
-import { getToken } from 'next-auth/jwt';
 
 import { TenantNavbar } from '@/components/tenant/TenantNavbar';
 import { TenantProvider } from '@/components/tenant/TenantProvider';
@@ -28,23 +27,19 @@ export default async function TenantLayout({
 
   const { tenant } = await params;
   
-  // Get the JWT token to access the user ID
-  const token = await getToken({ req: { headers: {} } as any });
-  
   // Check if user has access to this tenant
   debugDatabase('Session object received', { 
     hasSession: !!session,
     hasUser: !!session?.user,
     userEmail: session?.user?.email,
-    userId: session?.user?.id,
+    userId: (session?.user as any)?.id,
     sessionKeys: Object.keys(session || {}),
     userKeys: Object.keys(session?.user || {}),
-    tokenSub: token?.sub,
-    tokenId: token?.id
+    sessionUserOrganizations: (session?.user as any)?.organizations?.length || 0
   });
   
-  // Use token.sub as the userId since session.user.id is not persisted
-  const userId = token?.sub || '';
+  // Use session.user.id directly since it's now being set correctly in the session callback
+  const userId = (session?.user as any)?.id || '';
   
   debugDatabase('Tenant layout access check', { 
     tenant, 
