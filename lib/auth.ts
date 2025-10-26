@@ -208,6 +208,11 @@ export const authOptions = {
         
         session.user.id = token.sub;
         
+        debugAuth('Session user ID set', { 
+          sessionUserId: session.user.id,
+          tokenSub: token.sub
+        });
+        
         // Get user's organizations
         const { data: organizations } = await supabaseAdmin
           .from('organization_members')
@@ -233,7 +238,8 @@ export const authOptions = {
 
         debugAuth('Session updated', { 
           userId: session.user.id,
-          organizationsCount: session.user.organizations.length
+          organizationsCount: session.user.organizations.length,
+          sessionUserKeys: Object.keys(session.user)
         });
       } else {
         debugAuth('Session callback - no token.sub or session.user', { 
