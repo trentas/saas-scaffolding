@@ -118,8 +118,19 @@ export const authOptions = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async jwt({ token, user, account }: { token: any; user: any; account: any }) {
       try {
+        debugAuth('JWT callback called', { 
+          hasToken: !!token, 
+          hasUser: !!user, 
+          hasAccount: !!account,
+          tokenSub: token?.sub,
+          userId: user?.id,
+          accountProvider: account?.provider
+        });
+
         // For OAuth providers (Google), create user if doesn't exist
         if (account?.provider === 'google') {
+          debugAuth('Processing Google OAuth user', { email: user.email });
+          
           const { data: existingUser, error } = await supabaseAdmin
             .from('users')
             .select('*')
@@ -134,6 +145,8 @@ export const authOptions = {
 
           // If user doesn't exist, create them
           if (!existingUser) {
+            debugAuth('Creating new Google OAuth user', { email: user.email });
+            
             const { error: createError } = await supabaseAdmin
               .from('users')
               .insert({
@@ -154,8 +167,21 @@ export const authOptions = {
         }
 
         if (user) {
+          debugAuth('Setting token properties', { 
+            userId: user.id, 
+            userEmail: user.email,
+            tokenSub: token.sub 
+          });
+          
           token.id = user.id;
+          token.sub = user.id; // Ensure sub is also set for JWT
+          
+          debugAuth('Token updated', { 
+            tokenId: token.id, 
+            tokenSub: token.sub 
+          });
         }
+        
         return token;
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -166,7 +192,20 @@ export const authOptions = {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async session({ session, token }: { session: any; token: any }) {
+      debugAuth('Session callback called', { 
+        hasSession: !!session, 
+        hasToken: !!token,
+        tokenSub: token?.sub,
+        tokenId: token?.id,
+        sessionUserEmail: session?.user?.email
+      });
+
       if (token.sub && session.user) {
+        debugAuth('Setting session user ID', { 
+          tokenSub: token.sub,
+          sessionUserEmail: session.user.email 
+        });
+        
         session.user.id = token.sub;
         
         // Get user's organizations
@@ -191,6 +230,16 @@ export const authOptions = {
           plan: member.organizations.plan,
           role: member.role,
         })) || [];
+
+        debugAuth('Session updated', { 
+          userId: session.user.id,
+          organizationsCount: session.user.organizations.length
+        });
+      } else {
+        debugAuth('Session callback - no token.sub or session.user', { 
+          hasTokenSub: !!token?.sub,
+          hasSessionUser: !!session?.user
+        });
       }
 
       return session;
