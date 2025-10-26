@@ -2,6 +2,8 @@ import { notFound, redirect } from 'next/navigation';
 
 import { getServerSession } from 'next-auth/next';
 
+import { authOptions } from '@/lib/auth';
+
 import { TenantNavbar } from '@/components/tenant/TenantNavbar';
 import { TenantProvider } from '@/components/tenant/TenantProvider';
 import { TenantSidebar } from '@/components/tenant/TenantSidebar';
@@ -19,7 +21,7 @@ export default async function TenantLayout({
   children,
   params,
 }: TenantLayoutProps) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   
   if (!session) {
     redirect('/auth/signin');
@@ -35,7 +37,10 @@ export default async function TenantLayout({
     userId: (session?.user as any)?.id,
     sessionKeys: Object.keys(session || {}),
     userKeys: Object.keys(session?.user || {}),
-    sessionUserOrganizations: (session?.user as any)?.organizations?.length || 0
+    sessionUserOrganizations: (session?.user as any)?.organizations?.length || 0,
+    fullSessionUser: session?.user, // Debug: show the full user object
+    sessionUserType: typeof session?.user,
+    sessionUserStringified: JSON.stringify(session?.user, null, 2)
   });
   
   // Use session.user.id directly since it's now being set correctly in the session callback
