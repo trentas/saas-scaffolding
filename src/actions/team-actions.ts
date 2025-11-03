@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase";
-import { sendInvitationEmail } from "@/lib/email";
+import { sendInvitationEmail, sendOwnershipTransferEmail } from "@/lib/email";
 import { actionClient } from "./safe-action";
 import { 
   inviteMemberSchema, 
@@ -413,17 +413,17 @@ export const transferOwnershipAction = actionClient
       const { newOwnerMemberId, organizationId } = parsedInput;
       
       // Get current user's organization context
-      const { userRole: currentUserRole } = await getUserOrganizationContextById(session.user.id, organizationId);
+      const { userRole: currentUserRole, organizationName } = await getUserOrganizationContextById(session.user.id, organizationId);
       
       // Only owners can transfer ownership
       if (currentUserRole !== 'owner') {
         throw new Error('Only organization owners can transfer ownership');
       }
 
-      // Get new owner member details
+      // Get new owner member details with user info
       const { data: newOwnerMember, error: newOwnerError } = await supabaseAdmin
         .from('organization_members')
-        .select('user_id, role')
+        .select('user_id, role, users!organization_members_user_id_fkey (name, email)')
         .eq('id', newOwnerMemberId)
         .eq('organization_id', organizationId)
         .single();
@@ -436,6 +436,17 @@ export const transferOwnershipAction = actionClient
       if (newOwnerMember.user_id === session.user.id) {
         throw new Error('You are already the owner');
       }
+
+      // Get current owner's name
+      const { data: currentOwnerUser } = await supabaseAdmin
+        .from('users')
+        .select('name')
+        .eq('id', session.user.id)
+        .single();
+
+      const previousOwnerName = currentOwnerUser?.name || 'The previous owner';
+      const newOwnerName = (newOwnerMember.users as any)?.name || 'User';
+      const newOwnerEmail = (newOwnerMember.users as any)?.email;
 
       // Use a transaction to ensure atomicity
       // Step 1: Demote current owner to admin
@@ -473,6 +484,21 @@ export const transferOwnershipAction = actionClient
         fromUserId: session.user.id, 
         toUserId: newOwnerMember.user_id 
       });
+
+      // Send email notification to new owner
+      if (newOwnerEmail) {
+        try {
+          await sendOwnershipTransferEmail(
+            newOwnerEmail,
+            organizationName,
+            newOwnerName,
+            previousOwnerName
+          );
+        } catch (emailError) {
+          // Log email error but don't fail the transaction
+          debugDatabase('Failed to send ownership transfer email', { error: emailError });
+        }
+      }
 
       revalidatePath('/[tenant]/team', 'page');
       

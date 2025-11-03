@@ -124,3 +124,53 @@ export async function sendInvitationEmail(
     throw error;
   }
 }
+
+export async function sendOwnershipTransferEmail(
+  email: string,
+  organizationName: string,
+  newOwnerName: string,
+  previousOwnerName: string
+) {
+  try {
+    debugEmail('Sending ownership transfer email', {
+      to: email,
+      organizationName,
+      newOwnerName,
+      previousOwnerName
+    });
+    
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM!,
+      to: email,
+      subject: `You're now the owner of ${organizationName}`,
+      html: `
+        <h1>Congratulations! You're now the owner of ${organizationName}</h1>
+        <p>Hi ${newOwnerName},</p>
+        <p><strong>${previousOwnerName}</strong> has transferred ownership of <strong>${organizationName}</strong> to you.</p>
+        <p>As the new owner, you now have full control of the organization and can:</p>
+        <ul>
+          <li>Manage all organization settings</li>
+          <li>Invite and remove team members</li>
+          <li>Change member roles and permissions</li>
+          <li>Transfer ownership to another member</li>
+          <li>Delete the organization</li>
+        </ul>
+        <p>To manage your organization, visit your dashboard:</p>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Go to Dashboard</a>
+        <p>If you have any questions or concerns, please don't hesitate to reach out.</p>
+        <p>Best regards,<br>The ${process.env.NEXT_PUBLIC_APP_NAME} Team</p>
+      `
+    });
+
+    debugEmail('Ownership transfer email sent successfully', {
+      emailId: result.data?.id,
+      to: email,
+      organizationName
+    });
+
+    return result;
+  } catch (error) {
+    logError(error, 'sendOwnershipTransferEmail');
+    throw error;
+  }
+}
