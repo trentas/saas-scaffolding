@@ -73,7 +73,7 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error loading profile:', error);
-      toast.error('Failed to load profile data');
+      toast.error(t('profile.loadError'));
     } finally {
       setIsLoading(false);
     }
@@ -90,12 +90,12 @@ export default function ProfilePage() {
     try {
       const result = await updateProfileAction({ name });
       if (result?.data?.success) {
-        toast.success('Profile updated successfully');
+        toast.success(t('profile.updateSuccess'));
         setIsEditingName(false);
         await loadProfile();
       }
     } catch (error) {
-      toast.error('Failed to update profile');
+      toast.error(t('profile.updateError'));
     } finally {
       setIsSaving(false);
     }
@@ -122,12 +122,12 @@ export default function ProfilePage() {
         language: profileData?.preferences.language || 'pt-BR',
         theme: newTheme,
       });
-      toast.success('Theme preference updated');
+      toast.success(t('preferences.appearance.updated'));
     } catch (error) {
       console.error('Error updating theme:', error);
       // Revert on error
       setTheme(profileData?.themePreference || 'system');
-      toast.error('Failed to update theme preference');
+      toast.error(t('common.error'));
     }
   };
 
@@ -152,7 +152,7 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Error updating language:', error);
-      toast.error('Failed to update language preference');
+      toast.error(t('common.error'));
     }
   };
 
@@ -165,7 +165,7 @@ export default function ProfilePage() {
   }
 
   if (!profileData) {
-    return <div>Failed to load profile data</div>;
+    return <div>{t('profile.loadError')}</div>;
   }
 
   const initials = profileData.name
@@ -178,9 +178,9 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
+        <h1 className="text-3xl font-bold">{t('profile.pageTitle')}</h1>
         <p className="text-muted-foreground">
-          Manage your account settings and preferences
+          {t('profile.pageSubtitle')}
         </p>
       </div>
 
@@ -188,19 +188,19 @@ export default function ProfilePage() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            Profile
+            {t('profile.title')}
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Lock className="h-4 w-4" />
-            Security
+            {t('security.title')}
           </TabsTrigger>
           <TabsTrigger value="preferences" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Preferences
+            {t('preferences.title')}
           </TabsTrigger>
           <TabsTrigger value="account" className="flex items-center gap-2">
             <Trash2 className="h-4 w-4" />
-            Account
+            {t('account.title')}
           </TabsTrigger>
         </TabsList>
 
@@ -208,9 +208,9 @@ export default function ProfilePage() {
         <TabsContent value="profile" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle>{t('profile.profileInformation')}</CardTitle>
               <CardDescription>
-                Update your personal information
+                {t('profile.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -227,7 +227,7 @@ export default function ProfilePage() {
 
               <div className="space-y-4 border-t pt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">{t('profile.fullName')}</Label>
                   <div className="flex gap-2">
                     <Input
                       id="name"
@@ -245,23 +245,23 @@ export default function ProfilePage() {
                           }}
                           disabled={isSaving}
                         >
-                          Cancel
+                          {t('profile.cancel')}
                         </Button>
                         <Button onClick={handleSaveName} disabled={isSaving}>
                           {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          Save
+                          {t('profile.save')}
                         </Button>
                       </>
                     ) : (
                       <Button onClick={() => setIsEditingName(true)}>
-                        Edit
+                        {t('profile.edit')}
                       </Button>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('profile.email')}</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="email"
@@ -269,7 +269,7 @@ export default function ProfilePage() {
                       disabled
                     />
                     {profileData.emailVerified && (
-                      <Badge variant="secondary">Verified</Badge>
+                      <Badge variant="secondary">{t('profile.verified')}</Badge>
                     )}
                   </div>
                 </div>
@@ -282,15 +282,15 @@ export default function ProfilePage() {
         <TabsContent value="security" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Password</CardTitle>
+              <CardTitle>{t('security.password.title')}</CardTitle>
               <CardDescription>
-                Change your password regularly to keep your account secure
+                {t('security.password.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ChangePasswordDialog>
                 <Button variant="outline">
-                  Change Password
+                  {t('security.password.changeButton')}
                 </Button>
               </ChangePasswordDialog>
             </CardContent>
@@ -298,36 +298,36 @@ export default function ProfilePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Two-Factor Authentication</CardTitle>
+              <CardTitle>{t('security.twoFactor.title')}</CardTitle>
               <CardDescription>
-                Add an extra layer of security to your account
+                {t('security.twoFactor.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="h-5 w-5" />
-                  <span>Status</span>
+                  <span>{t('security.twoFactor.status')}</span>
                 </div>
                 {profileData.mfaEnabled ? (
                   <Badge variant="default" className="bg-green-500">
-                    Enabled
+                    {t('security.twoFactor.enabled')}
                   </Badge>
                 ) : (
-                  <Badge variant="outline">Disabled</Badge>
+                  <Badge variant="outline">{t('security.twoFactor.disabled')}</Badge>
                 )}
               </div>
 
               {profileData.mfaEnabled ? (
                 <Disable2FADialog>
                   <Button variant="outline" className="w-full">
-                    Disable 2FA
+                    {t('security.twoFactor.disableButton')}
                   </Button>
                 </Disable2FADialog>
               ) : (
                 <Enable2FADialog>
                   <Button variant="outline" className="w-full">
-                    Enable 2FA
+                    {t('security.twoFactor.enableButton')}
                   </Button>
                 </Enable2FADialog>
               )}
@@ -339,9 +339,9 @@ export default function ProfilePage() {
         <TabsContent value="preferences" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Appearance</CardTitle>
+              <CardTitle>{t('preferences.appearance.title')}</CardTitle>
               <CardDescription>
-                Choose how the app is displayed
+                {t('preferences.appearance.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -350,21 +350,21 @@ export default function ProfilePage() {
                   <RadioGroupItem value="light" id="light" />
                   <Label htmlFor="light" className="flex items-center gap-2 cursor-pointer">
                     <Sun className="h-4 w-4" />
-                    Light
+                    {t('preferences.appearance.light')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="dark" id="dark" />
                   <Label htmlFor="dark" className="flex items-center gap-2 cursor-pointer">
                     <Moon className="h-4 w-4" />
-                    Dark
+                    {t('preferences.appearance.dark')}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="system" id="system" />
                   <Label htmlFor="system" className="flex items-center gap-2 cursor-pointer">
                     <Monitor className="h-4 w-4" />
-                    System
+                    {t('preferences.appearance.system')}
                   </Label>
                 </div>
               </RadioGroup>
@@ -373,9 +373,9 @@ export default function ProfilePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Language</CardTitle>
+              <CardTitle>{t('preferences.language.title')}</CardTitle>
               <CardDescription>
-                Choose your preferred language
+                {t('preferences.language.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -387,8 +387,8 @@ export default function ProfilePage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pt-BR">🇧🇷 Português (Brasil)</SelectItem>
-                  <SelectItem value="en-US">🇺🇸 English (US)</SelectItem>
+                  <SelectItem value="pt-BR">🇧🇷 {t('preferences.language.ptBR')}</SelectItem>
+                  <SelectItem value="en-US">🇺🇸 {t('preferences.language.enUS')}</SelectItem>
                 </SelectContent>
               </Select>
             </CardContent>
@@ -399,24 +399,24 @@ export default function ProfilePage() {
         <TabsContent value="account" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Account Information</CardTitle>
+              <CardTitle>{t('account.info.title')}</CardTitle>
               <CardDescription>
-                Your account details and statistics
+                {t('account.info.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Account created</span>
+                <span className="text-muted-foreground">{t('account.info.accountCreated')}</span>
                 <span>{new Date(profileData.accountCreated).toLocaleDateString()}</span>
               </div>
               {profileData.lastLogin && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Last login</span>
+                  <span className="text-muted-foreground">{t('account.info.lastLogin')}</span>
                   <span>{new Date(profileData.lastLogin).toLocaleDateString()}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Organizations</span>
+                <span className="text-muted-foreground">{t('account.info.organizations')}</span>
                 <span>{profileData.organizationCount}</span>
               </div>
             </CardContent>
@@ -424,21 +424,20 @@ export default function ProfilePage() {
 
           <Card className="border-destructive bg-destructive/5">
             <CardHeader>
-              <CardTitle className="text-destructive">Danger Zone</CardTitle>
+              <CardTitle className="text-destructive">{t('account.danger.title')}</CardTitle>
               <CardDescription>
-                This action cannot be undone. This will permanently delete your account and all data.
+                {t('account.danger.deleteDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <DeleteAccountDialog isOwnerOfAnyOrg={profileData?.isOwnerOfAnyOrg || false}>
                 <Button variant="destructive" className="w-full" disabled={profileData?.isOwnerOfAnyOrg}>
-                  Delete My Account
+                  {t('account.danger.deleteButton')}
                 </Button>
               </DeleteAccountDialog>
               {profileData?.isOwnerOfAnyOrg && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  You cannot delete your account while you are an owner of an organization. 
-                  Please transfer ownership to another member first.
+                  {t('account.danger.ownerWarning')}
                 </p>
               )}
             </CardContent>
