@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { canManageMembers } from '@/lib/permissions';
+import { getServerTranslation } from '@/lib/server-translation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogoUpload } from '@/components/organization/LogoUpload';
 import { DeleteOrganizationDialog } from '@/components/organization/DeleteOrganizationDialog';
@@ -51,6 +52,7 @@ async function getUserOrganizationContext(userId: string, tenant: string) {
 
 export default async function OrganizationSettingsPage({ params }: SettingsPageProps) {
   const session = await getServerSession(authOptions);
+  const { t } = await getServerTranslation();
 
   if (!session?.user?.id) {
     redirect('/auth/signin');
@@ -73,9 +75,9 @@ export default async function OrganizationSettingsPage({ params }: SettingsPageP
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Organization Settings</h1>
+          <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
           <p className="text-muted-foreground">
-            Manage your organization settings and preferences
+            {t('settings.subtitle')}
           </p>
         </div>
       </div>
@@ -91,9 +93,9 @@ export default async function OrganizationSettingsPage({ params }: SettingsPageP
       {isOwner && (
         <Card className="border-destructive bg-destructive/5">
           <CardHeader>
-            <CardTitle className="text-destructive">Danger Zone</CardTitle>
+            <CardTitle className="text-destructive">{t('settings.dangerZone')}</CardTitle>
             <CardDescription>
-              Irreversible and destructive actions for this organization
+              {t('settings.deleteOrganizationDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -102,11 +104,11 @@ export default async function OrganizationSettingsPage({ params }: SettingsPageP
               organizationName={organizationName}
             >
               <Button variant="destructive" className="w-full">
-                Delete Organization
+                {t('settings.deleteOrganizationButton')}
               </Button>
             </DeleteOrganizationDialog>
             <p className="text-sm text-muted-foreground mt-2">
-              Once you delete an organization, there is no going back. Please be certain.
+              {t('settings.deleteOrganizationWarning')}
             </p>
           </CardContent>
         </Card>

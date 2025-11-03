@@ -133,14 +133,23 @@ export default function ProfilePage() {
 
   const handleLanguageChange = async (newLanguage: 'pt-BR' | 'en-US') => {
     try {
-      await updatePreferencesAction({
+      const result = await updatePreferencesAction({
         language: newLanguage,
         theme: profileData?.preferences.theme || 'system',
       });
-      setProfileData((prev) => 
-        prev ? { ...prev, preferences: { ...prev.preferences, language: newLanguage } } : null
-      );
-      toast.success(t('preferences.language.updated'));
+      
+      if (result?.data?.success) {
+        setProfileData((prev) => 
+          prev ? { ...prev, preferences: { ...prev.preferences, language: newLanguage } } : null
+        );
+        toast.success(t('preferences.language.updated'));
+        // Force reload to update all translations
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
+      } else {
+        throw new Error('Failed to update language preference');
+      }
     } catch (error) {
       console.error('Error updating language:', error);
       toast.error('Failed to update language preference');

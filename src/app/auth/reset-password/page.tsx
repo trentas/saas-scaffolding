@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useBrowserTranslation } from '@/hooks/useBrowserTranslation';
 
 function ResetPasswordContent() {
+  const { t } = useBrowserTranslation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,10 +26,11 @@ function ResetPasswordContent() {
   useEffect(() => {
     const tokenParam = searchParams.get('token');
     if (!tokenParam) {
-      setMessage('Invalid or missing reset token');
+      setMessage(t('auth.resetPassword.invalidToken'));
       return;
     }
     setToken(tokenParam);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,21 +40,15 @@ function ResetPasswordContent() {
 
     // Validate passwords match
     if (password !== confirmPassword) {
-      setMessage('Passwords do not match');
+      setMessage(t('auth.resetPassword.passwordMismatch'));
       setIsLoading(false);
       return;
     }
 
     // Validate password strength
-    if (password.length < 8) {
-      setMessage('Password must be at least 8 characters long');
-      setIsLoading(false);
-      return;
-    }
-
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
-    if (!passwordRegex.test(password)) {
-      setMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+    if (!passwordRegex.test(password) || password.length < 8) {
+      setMessage(t('auth.resetPassword.weakPassword'));
       setIsLoading(false);
       return;
     }
@@ -69,12 +66,15 @@ function ResetPasswordContent() {
 
       if (response.ok) {
         setIsSuccess(true);
-        setMessage('Password reset successfully! You can now sign in with your new password.');
+        setMessage(t('auth.resetPassword.success'));
+        setTimeout(() => {
+          router.push('/auth/signin');
+        }, 2000);
       } else {
-        setMessage(data.message || 'An error occurred');
+        setMessage(data.message || t('auth.resetPassword.error'));
       }
     } catch {
-      setMessage('An error occurred. Please try again.');
+      setMessage(t('auth.resetPassword.error'));
     } finally {
       setIsLoading(false);
     }
@@ -91,15 +91,15 @@ function ResetPasswordContent() {
           <div className="container">
             <div className="flex flex-col gap-4">
               <Card className="mx-auto w-full max-w-sm">
-                <CardHeader className="text-center">
-                  <h1 className="text-2xl font-bold">Invalid Reset Link</h1>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <p className="text-muted-foreground mb-4">{message}</p>
-                  <Button asChild className="w-full">
-                    <Link href="/auth/forgot-password">Request New Reset Link</Link>
-                  </Button>
-                </CardContent>
+              <CardHeader className="text-center">
+                <h1 className="text-2xl font-bold">{t('auth.resetPassword.invalidToken')}</h1>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground mb-4">{message}</p>
+                <Button asChild className="w-full">
+                  <Link href="/auth/forgot-password">{t('auth.forgotPassword.sendButton')}</Link>
+                </Button>
+              </CardContent>
               </Card>
             </div>
           </div>
@@ -115,20 +115,20 @@ function ResetPasswordContent() {
           <div className="flex flex-col gap-4">
             <Card className="mx-auto w-full max-w-sm">
               <CardHeader className="text-center">
-                <h1 className="text-2xl font-bold">Reset Password</h1>
+                <h1 className="text-2xl font-bold">{t('auth.resetPassword.title')}</h1>
                 <p className="text-muted-foreground">
-                  Enter your new password below.
+                  {t('auth.resetPassword.subtitle')}
                 </p>
               </CardHeader>
               <CardContent>
                 {!isSuccess ? (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="password">New Password</Label>
+                      <Label htmlFor="password">{t('auth.resetPassword.newPassword')}</Label>
                       <Input
                         id="password"
                         type="password"
-                        placeholder="Enter new password"
+                        placeholder={t('auth.resetPassword.newPasswordPlaceholder')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -136,11 +136,11 @@ function ResetPasswordContent() {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
+                      <Label htmlFor="confirmPassword">{t('auth.resetPassword.confirmPassword')}</Label>
                       <Input
                         id="confirmPassword"
                         type="password"
-                        placeholder="Confirm new password"
+                        placeholder={t('auth.resetPassword.confirmPasswordPlaceholder')}
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
@@ -148,13 +148,13 @@ function ResetPasswordContent() {
                     </div>
                     
                     {message && (
-                      <p className={`text-sm ${message.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>
+                      <p className={`text-sm ${message.includes('successfully') || message.includes('sucesso') ? 'text-green-500' : 'text-red-500'}`}>
                         {message}
                       </p>
                     )}
                     
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Resetting...' : 'Reset Password'}
+                      {isLoading ? t('auth.resetPassword.resetting') : t('auth.resetPassword.resetButton')}
                     </Button>
                   </form>
                 ) : (
@@ -162,14 +162,14 @@ function ResetPasswordContent() {
                     <div className="text-green-500 text-4xl">✓</div>
                     <p className="text-muted-foreground">{message}</p>
                     <Button onClick={handleContinue} className="w-full">
-                      Continue to Sign In
+                      {t('auth.resetPassword.backToSignIn')}
                     </Button>
                   </div>
                 )}
                 
                 <div className="text-center mt-4">
                   <Link href="/auth/signin" className="text-sm text-muted-foreground hover:text-primary">
-                    Back to Sign In
+                    {t('auth.resetPassword.backToSignIn')}
                   </Link>
                 </div>
               </CardContent>

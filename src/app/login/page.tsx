@@ -14,8 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { useBrowserTranslation } from '@/hooks/useBrowserTranslation';
 
 const Login = () => {
+  const { t } = useBrowserTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -39,13 +41,13 @@ const Login = () => {
 
       if (result?.error) {
         if (result.error.includes("EmailNotVerified") || result.error.includes("verify your email")) {
-          setError("Please verify your email before signing in. Check your inbox for a verification link.");
+          setError(t('auth.signin.emailNotVerified'));
           setShowResendVerification(true);
         } else if (result.error.includes("AccountLocked") || result.error.includes("locked")) {
-          setError("Your account has been temporarily locked due to too many failed login attempts. Please try again later.");
+          setError(t('auth.signin.accountLocked'));
           setShowResendVerification(false);
         } else {
-          setError(`Login failed: ${result.error}`);
+          setError(t('auth.signin.invalidCredentials'));
           setShowResendVerification(false);
         }
       } else if (result?.ok) {
@@ -77,7 +79,7 @@ const Login = () => {
         window.location.href = "/setup";
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      setError(t('auth.signin.error'));
     } finally {
       setIsLoading(false);
     }
@@ -105,13 +107,13 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        setResendMessage("Verification email sent! Please check your inbox.");
+        setResendMessage(t('auth.signin.verificationSent'));
         setShowResendVerification(false);
       } else {
-        setResendMessage(data.message || "Failed to send verification email.");
+        setResendMessage(data.message || t('auth.signin.resendError'));
       }
     } catch {
-      setResendMessage("An error occurred. Please try again.");
+      setResendMessage(t('auth.signin.resendError'));
     }
   };
 
@@ -129,9 +131,9 @@ const Login = () => {
                   height={18}
                   className="mb-7 dark:invert"
                 />
-                <p className="mb-2 text-2xl font-bold">Welcome back</p>
+                <p className="mb-2 text-2xl font-bold">{t('auth.signin.title')}</p>
                 <p className="text-muted-foreground">
-                  Please enter your details.
+                  {t('auth.signin.subtitle')}
                 </p>
               </CardHeader>
               <CardContent>
@@ -146,7 +148,7 @@ const Login = () => {
                             onClick={handleResendVerification}
                             className="text-sm text-primary hover:underline"
                           >
-                            Resend verification email
+                            {t('auth.signin.resendVerification')}
                           </button>
                         </div>
                       )}
@@ -159,7 +161,7 @@ const Login = () => {
                   )}
                   <Input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder={t('auth.signin.emailPlaceholder')}
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -174,7 +176,7 @@ const Login = () => {
                   <div>
                     <Input
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder={t('auth.signin.passwordPlaceholder')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -192,15 +194,15 @@ const Login = () => {
                         htmlFor="remember"
                         className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
-                        Remember me
+                        {t('auth.signin.rememberMe')}
                       </label>
                     </div>
                     <Link href="/auth/forgot-password" className="text-primary text-sm font-medium">
-                      Forgot password
+                      {t('auth.signin.forgotPassword')}
                     </Link>
                   </div>
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
-                    {isLoading ? "Signing in..." : "Sign in"}
+                    {isLoading ? t('auth.signin.signingIn') : t('auth.signin.signInButton')}
                   </Button>
                   {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
                     <Button
@@ -211,14 +213,14 @@ const Login = () => {
                       disabled={isLoading}
                     >
                       <FcGoogle className="mr-2 size-5" />
-                      Sign in with Google
+                      {t('auth.signin.signInWithGoogle')}
                     </Button>
                   )}
                 </form>
                 <div className="text-muted-foreground mx-auto mt-8 flex justify-center gap-1 text-sm">
-                  <p>Don&apos;t have an account?</p>
+                  <p>{t('auth.signin.noAccount')}</p>
                   <Link href="/signup" className="text-primary font-medium">
-                    Sign up
+                    {t('auth.signin.signUp')}
                   </Link>
                 </div>
               </CardContent>
