@@ -79,7 +79,7 @@ export function TenantNavbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pr-4">
           {session?.user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

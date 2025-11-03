@@ -34,15 +34,9 @@ export default function Setup() {
       return;
     }
 
-    // If user already has organizations, redirect to first organization dashboard
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const organizations = (session.user as any)?.organizations || [];
-    if (organizations.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const firstOrg = organizations[0];
-      window.location.href = `/${firstOrg.slug}/dashboard`;
-      return;
-    }
+    // Allow users with existing organizations to create new ones
+    // Only redirect if user has no organizations and is accessing setup unintentionally
+    // Users can explicitly access /setup to create additional organizations
   }, [session, status, router]);
 
   const handleOrganizationNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
