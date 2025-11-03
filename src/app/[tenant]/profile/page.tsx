@@ -320,13 +320,13 @@ export default function ProfilePage() {
 
               {profileData.mfaEnabled ? (
                 <Disable2FADialog>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline">
                     {t('security.twoFactor.disableButton')}
                   </Button>
                 </Disable2FADialog>
               ) : (
                 <Enable2FADialog>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline">
                     {t('security.twoFactor.enableButton')}
                   </Button>
                 </Enable2FADialog>

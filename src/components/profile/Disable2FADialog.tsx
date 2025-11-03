@@ -8,6 +8,7 @@ import { ShieldCheck, Loader2, AlertTriangle } from 'lucide-react';
 
 import { disableMFAAction } from '@/actions/profile-actions';
 import { disable2FASchema, type Disable2FAData } from '@/lib/form-schema';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,6 +36,7 @@ interface Disable2FADialogProps {
 }
 
 export function Disable2FADialog({ children }: Disable2FADialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,15 +53,19 @@ export function Disable2FADialog({ children }: Disable2FADialogProps) {
       const result = await disableMFAAction(data);
 
       if (result?.data?.success) {
-        toast.success('2FA disabled successfully');
+        toast.success(t('security.twoFactor.disableSuccess'));
         form.reset();
         setOpen(false);
+        // Refresh page to update status
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       } else {
-        toast.error(result?.data?.message || 'Failed to disable 2FA');
+        toast.error(result?.data?.message || t('security.twoFactor.disableError'));
       }
     } catch (error) {
       console.error('Error disabling 2FA:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to disable 2FA');
+      toast.error(error instanceof Error ? error.message : t('security.twoFactor.disableError'));
     } finally {
       setIsLoading(false);
     }
@@ -74,18 +80,17 @@ export function Disable2FADialog({ children }: Disable2FADialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShieldCheck className="h-5 w-5" />
-            Disable Two-Factor Authentication
+            {t('security.twoFactor.disableDialogTitle')}
           </DialogTitle>
           <DialogDescription>
-            Enter your password to disable 2FA on your account
+            {t('security.twoFactor.disableDialogDescription')}
           </DialogDescription>
         </DialogHeader>
 
         <Alert variant="destructive" className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Your account will be less secure without two-factor authentication.
-            Your backup codes will be invalidated.
+            {t('security.twoFactor.disableWarning')}
           </AlertDescription>
         </Alert>
 
@@ -96,16 +101,16 @@ export function Disable2FADialog({ children }: Disable2FADialogProps) {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t('security.twoFactor.passwordLabel')}</FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder={t('security.twoFactor.passwordPlaceholder')}
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    Enter your current password to confirm this action
+                    {t('security.twoFactor.passwordDescription')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -122,7 +127,7 @@ export function Disable2FADialog({ children }: Disable2FADialogProps) {
                 }}
                 disabled={isLoading}
               >
-                Cancel
+                {t('security.twoFactor.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -130,7 +135,7 @@ export function Disable2FADialog({ children }: Disable2FADialogProps) {
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Disable 2FA
+                {t('security.twoFactor.disableButton')}
               </Button>
             </DialogFooter>
           </form>

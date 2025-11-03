@@ -138,6 +138,7 @@ export type UpdatePreferencesData = z.infer<typeof updatePreferencesSchema>
 export const enable2FASchema = z.object({
   verificationCode: z.string().length(6, "Verification code must be 6 digits")
     .regex(/^\d+$/, "Verification code must be numeric"),
+  secret: z.string().min(1, "Secret is required"),
 })
 
 export type Enable2FAData = z.infer<typeof enable2FASchema>

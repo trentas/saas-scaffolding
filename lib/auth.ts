@@ -24,9 +24,64 @@ export const authOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
+        loginToken: { label: 'Login Token', type: 'text' }
       },
       async authorize(credentials) {
+        // Check if loginToken is provided (for 2FA completion)
+        if (credentials?.loginToken) {
+          try {
+            // Validate login token
+            const { data: tokenData, error: tokenError } = await supabaseAdmin
+              .from('two_factor_codes')
+              .select('user_id, expires_at, used')
+              .eq('code', credentials.loginToken)
+              .eq('used', false)
+              .gt('expires_at', new Date().toISOString())
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single();
+
+            if (tokenError || !tokenData) {
+              return null;
+            }
+
+            // Get user from database
+            const { data: user, error: userError } = await supabaseAdmin
+              .from('users')
+              .select('*')
+              .eq('id', tokenData.user_id)
+              .single();
+
+            if (userError || !user) {
+              return null;
+            }
+
+            // Check if account is locked
+            if (user.locked_until && new Date(user.locked_until) > new Date()) {
+              throw new Error('AccountLocked');
+            }
+
+            // Mark token as used
+            await supabaseAdmin
+              .from('two_factor_codes')
+              .update({ used: true })
+              .eq('code', credentials.loginToken);
+
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.avatar_url,
+            };
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Login token auth error:', error);
+            throw error;
+          }
+        }
+
+        // Normal email/password login
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
@@ -76,22 +131,31 @@ export const authOptions = {
             throw new Error('Invalid credentials');
           }
 
-          // Reset failed attempts on successful login
+          // Reset failed attempts on successful password verification
           await supabaseAdmin
             .from('users')
             .update({
               failed_login_attempts: 0,
               locked_until: null,
-              last_login_at: new Date().toISOString(),
             })
             .eq('id', user.id);
 
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.avatar_url,
-          };
+          // Check if 2FA is required
+          if (user.mfa_enabled && user.mfa_secret) {
+            // User has 2FA enabled - require TOTP verification
+            throw new Error(`Requires2FA:totp:${user.id}:${user.email}`);
+          } else {
+            // User doesn't have 2FA - require Email OTP
+            // Generate and send email OTP code
+            const { generate2FACode, store2FACode } = await import('./two-factor');
+            const { send2FACodeEmail } = await import('./email');
+            
+            const code = generate2FACode();
+            await store2FACode(user.id, code);
+            await send2FACodeEmail(user.email, code, user.name || 'User');
+            
+            throw new Error(`Requires2FA:email:${user.id}:${user.email}`);
+          }
         } catch (error) {
           // eslint-disable-next-line no-console
           console.error('Auth error:', error);

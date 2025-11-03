@@ -40,7 +40,17 @@ const Login = () => {
       });
 
       if (result?.error) {
-        if (result.error.includes("EmailNotVerified") || result.error.includes("verify your email")) {
+        // Check if 2FA is required
+        if (result.error.startsWith('Requires2FA:')) {
+          const parts = result.error.split(':');
+          const method = parts[1]; // 'totp' or 'email'
+          const userId = parts[2];
+          const userEmail = parts[3];
+          
+          // Redirect to 2FA verification page
+          router.push(`/auth/verify-2fa?method=${method}&userId=${userId}&email=${encodeURIComponent(userEmail)}`);
+          return;
+        } else if (result.error.includes("EmailNotVerified") || result.error.includes("verify your email")) {
           setError(t('auth.signin.emailNotVerified'));
           setShowResendVerification(true);
         } else if (result.error.includes("AccountLocked") || result.error.includes("locked")) {

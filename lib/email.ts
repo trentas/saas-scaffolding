@@ -174,3 +174,41 @@ export async function sendOwnershipTransferEmail(
     throw error;
   }
 }
+
+export async function send2FACodeEmail(email: string, code: string, name: string) {
+  try {
+    debugEmail('Sending 2FA code email', {
+      to: email,
+      name,
+      code: code.substring(0, 3) + '***',
+    });
+    
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM!,
+      to: email,
+      subject: `Your login verification code - ${code}`,
+      html: `
+        <h1>Your Login Verification Code</h1>
+        <p>Hi ${name},</p>
+        <p>You've requested to sign in to ${process.env.NEXT_PUBLIC_APP_NAME}. Use the verification code below to complete your login:</p>
+        <div style="background-color: #f5f5f5; border: 2px solid #007bff; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+          <h2 style="margin: 0; font-size: 32px; letter-spacing: 8px; color: #007bff; font-family: monospace;">${code}</h2>
+        </div>
+        <p><strong>This code will expire in 10 minutes.</strong></p>
+        <p>If you didn't request this code, please ignore this email or contact support if you have concerns.</p>
+        <p>For security reasons, never share this code with anyone.</p>
+        <p>Best regards,<br>The ${process.env.NEXT_PUBLIC_APP_NAME} Team</p>
+      `
+    });
+
+    debugEmail('2FA code email sent successfully', {
+      emailId: result.data?.id,
+      to: email
+    });
+
+    return result;
+  } catch (error) {
+    logError(error, 'send2FACodeEmail');
+    throw error;
+  }
+}

@@ -1,35 +1,45 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { supabaseAdmin } from '@/lib/supabase';
+import { generate2FACode, store2FACode } from '@/lib/two-factor';
+import { send2FACodeEmail } from '@/lib/email';
+import { logError } from '@/lib/debug';
 
-import { getServerSession } from 'next-auth/next';
-
-import { authOptions } from '@/lib/auth';
-// Note: 2FA is currently mocked, so email sending is not implemented
-// import { generate2FACode, store2FACode } from '@/lib/two-factor';
-
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id || !session?.user?.email || !session?.user?.name) {
+    const { userId } = await request.json();
+
+    if (!userId) {
       return NextResponse.json(
-        { message: 'Unauthorized' },
-        { status: 401 }
+        { message: 'User ID is required' },
+        { status: 400 }
       );
     }
 
-    // Note: 2FA is currently mocked, so this endpoint returns success without sending emails
-    // When implementing real 2FA, uncomment the following:
-    // const code = generate2FACode();
-    // await store2FACode(session.user.id, code);
-    // await send2FACode(session.user.email, code, session.user.name);
+    // Get user from database
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .select('id, email, name')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { message: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Generate and send new email OTP code
+    const code = generate2FACode();
+    await store2FACode(user.id, code);
+    await send2FACodeEmail(user.email, code, user.name || 'User');
 
     return NextResponse.json(
       { message: 'Verification code sent successfully' },
       { status: 200 }
     );
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('Resend 2FA error:', error);
+    logError(error, 'resend-2fa');
     
     return NextResponse.json(
       { message: 'Internal server error' },

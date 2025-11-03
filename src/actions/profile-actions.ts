@@ -156,24 +156,29 @@ export const updatePreferencesAction = actionClient
     }
   });
 
-// Generate MFA secret (mock)
+// Generate MFA secret (TOTP)
 export const generateMFASecretAction = actionClient
   .action(async () => {
     try {
       const session = await getServerSession(authOptions);
-      if (!session?.user?.id) {
+      if (!session?.user?.id || !session?.user?.email) {
         throw new Error('Unauthorized');
       }
 
-      // Generate mock secret and backup codes
-      const secret = `MOCK-${randomBytes(16).toString('hex').toUpperCase()}`;
-      const backupCodes: string[] = [];
-      for (let i = 0; i < 10; i++) {
-        backupCodes.push(randomBytes(4).toString('hex').toUpperCase());
-      }
+      // Import TOTP functions
+      const { generateTOTPSecret, generateTOTPQRCode, generateBackupCodes } = await import('@/lib/two-factor');
 
-      // Mock QR code URL (just an example)
-      const qrCodeUrl = `data:image/svg+xml;base64,${Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#000"/><text x="50" y="50" fill="#fff" text-anchor="middle" dominant-baseline="middle" font-size="12">MOCK QR</text></svg>`).toString('base64')}`;
+      // Generate TOTP secret
+      const { secret, otpauthUrl } = generateTOTPSecret(
+        session.user.email,
+        process.env.NEXT_PUBLIC_APP_NAME || 'SaaS Scaffolding'
+      );
+
+      // Generate QR code
+      const qrCodeUrl = await generateTOTPQRCode(otpauthUrl);
+
+      // Generate backup codes
+      const backupCodes = generateBackupCodes();
 
       debugDatabase('MFA secret generated', { userId: session.user.id });
 
@@ -191,7 +196,7 @@ export const generateMFASecretAction = actionClient
     }
   });
 
-// Verify and enable MFA (mock)
+// Verify and enable MFA (TOTP)
 export const verifyAndEnableMFAAction = actionClient
   .inputSchema(enable2FASchema)
   .action(async ({ parsedInput }) => {
@@ -201,18 +206,20 @@ export const verifyAndEnableMFAAction = actionClient
         throw new Error('Unauthorized');
       }
 
-      // For mock, accept any 6-digit code
-      // verificationCode is validated by schema but not used in mock implementation
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _ = parsedInput.verificationCode;
+      // Use the secret passed from the frontend
+      const { verifyTOTPCode, generateBackupCodes } = await import('@/lib/two-factor');
+      
+      const secret = parsedInput.secret;
 
-      // Generate mock backup codes
-      const backupCodes: string[] = [];
-      for (let i = 0; i < 10; i++) {
-        backupCodes.push(randomBytes(4).toString('hex').toUpperCase());
+      // Verify TOTP code
+      const isValid = verifyTOTPCode(secret, parsedInput.verificationCode);
+      
+      if (!isValid) {
+        throw new Error('Invalid verification code');
       }
 
-      const secret = `MOCK-${randomBytes(16).toString('hex').toUpperCase()}`;
+      // Generate backup codes
+      const backupCodes = generateBackupCodes();
 
       // Enable MFA
       const { error: updateError } = await supabaseAdmin
