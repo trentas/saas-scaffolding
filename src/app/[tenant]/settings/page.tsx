@@ -5,6 +5,7 @@ import { canManageMembers } from '@/lib/permissions';
 import { getServerTranslation } from '@/lib/server-translation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogoUpload } from '@/components/organization/LogoUpload';
+import { RenameOrganization } from '@/components/organization/RenameOrganization';
 import { DeleteOrganizationDialog } from '@/components/organization/DeleteOrganizationDialog';
 import { Button } from '@/components/ui/button';
 
@@ -62,7 +63,7 @@ export default async function OrganizationSettingsPage({ params }: SettingsPageP
   const { tenant } = await params;
 
   // Get user's organization context
-  const { userRole, organizationId, organizationName, logoUrl } = await getUserOrganizationContext(session.user.id, tenant);
+  const { userRole, organizationId, organizationName, organizationSlug, logoUrl } = await getUserOrganizationContext(session.user.id, tenant);
   
   // Check permissions - only owners and admins can access settings
   if (!canManageMembers(userRole)) {
@@ -83,6 +84,12 @@ export default async function OrganizationSettingsPage({ params }: SettingsPageP
       </div>
 
       {/* General Settings */}
+      <RenameOrganization
+        organizationId={organizationId}
+        currentName={organizationName}
+        currentSlug={organizationSlug}
+      />
+
       <LogoUpload 
         organizationId={organizationId}
         currentLogoUrl={logoUrl}

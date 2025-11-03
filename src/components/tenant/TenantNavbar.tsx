@@ -2,17 +2,15 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { LogOut, Settings } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { LogOut, Settings, Building2, Plus } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 
 import { useTenant } from './TenantProvider';
-import { OrganizationSwitcher } from './OrganizationSwitcher';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getUserAvatarUrl } from '@/lib/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -27,6 +25,7 @@ export function TenantNavbar() {
   const { data: session } = useSession();
   const { tenant, role } = useTenant();
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useTranslation();
 
   // Get current organization info
@@ -38,8 +37,21 @@ export function TenantNavbar() {
     signOut({ callbackUrl: '/' });
   };
 
+  const handleOrganizationChange = (orgSlug: string) => {
+    // Extract the current path without the organization prefix
+    const pathWithoutOrg = pathname.replace(/^\/[^\/]+/, '');
+    const newPath = `/${orgSlug}${pathWithoutOrg}`;
+    router.push(newPath);
+  };
+
+  const handleCreateOrganization = () => {
+    router.push('/setup');
+  };
+
   const defaultLogoUrl = process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || '/logo.svg';
   const logoUrl = currentOrganization?.logo_url || defaultLogoUrl;
+
+  const showOrganizationsSection = organizations.length > 0 || pathname === '/setup';
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -55,7 +67,16 @@ export function TenantNavbar() {
               unoptimized
             />
           </Link>
-          <OrganizationSwitcher currentOrganization={currentOrganization} />
+          {/* Organization name/role badge */}
+          {currentOrganization && (
+            <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-muted/50">
+              <Building2 className="h-3 w-3 text-muted-foreground" />
+              <span className="text-sm font-medium">{currentOrganization.name}</span>
+              <span className="text-xs text-muted-foreground capitalize">
+                ({t(`roles.${currentOrganization.role}` as any)})
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
@@ -80,7 +101,7 @@ export function TenantNavbar() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-72" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{session.user.name}</p>
@@ -98,10 +119,64 @@ export function TenantNavbar() {
                         <span>{t('navigation.profileAndSettings')}</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    {(role === 'owner' || role === 'admin') && (
+                      <DropdownMenuItem asChild>
+                        <Link href={`/${currentOrganization.slug}/settings`}>
+                          <Building2 className="mr-2 h-4 w-4" />
+                          <span>{t('navigation.organizationSettings')}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                   </>
                 )}
-                {(!currentOrganization || pathname === '/setup') && <DropdownMenuSeparator />}
+
+                {showOrganizationsSection && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <div className="px-2 py-1.5">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        {t('navigation.organizations')}
+                      </p>
+                    </div>
+                    
+                    {organizations.map((org: any) => (
+                      <DropdownMenuItem
+                        key={org.id}
+                        onClick={() => handleOrganizationChange(org.slug)}
+                        className="flex items-center gap-3 px-3 py-2"
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            <Building2 className="h-3 w-3" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col items-start flex-1">
+                          <span className="text-sm font-medium">{org.name}</span>
+                          <span className="text-xs text-muted-foreground capitalize">
+                            {t(`roles.${org.role}` as any)}
+                          </span>
+                        </div>
+                        {currentOrganization && org.slug === currentOrganization.slug && (
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                    
+                    <DropdownMenuItem
+                      onClick={handleCreateOrganization}
+                      className="flex items-center gap-3 px-3 py-2"
+                    >
+                      <Avatar className="h-6 w-6">
+                        <AvatarFallback className="text-xs">
+                          <Plus className="h-3 w-3" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm">{t('navigation.createOrganization')}</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>{t('navigation.signOut')}</span>
