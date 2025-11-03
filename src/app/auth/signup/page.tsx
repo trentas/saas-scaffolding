@@ -16,8 +16,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { acceptInvitationAction } from '@/actions/team-actions';
+import { useBrowserTranslation } from '@/hooks/useBrowserTranslation';
 
 export default function SignUp() {
+  const { t } = useBrowserTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,8 +37,9 @@ export default function SignUp() {
   useEffect(() => {
     if (inviteToken) {
       // We could fetch invitation details to pre-fill email, but for now we'll just show a message
-      setSuccess('You have been invited to join an organization. Please create your account to accept the invitation.');
+      setSuccess(t('auth.signup.inviteMessage'));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inviteToken]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,14 +57,15 @@ export default function SignUp() {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.signup.passwordMismatch'));
       setIsLoading(false);
       return;
     }
 
     // Validate password strength
-    if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+    if (!passwordRegex.test(formData.password) || formData.password.length < 8) {
+      setError(t('auth.signup.weakPassword'));
       setIsLoading(false);
       return;
     }
@@ -82,7 +86,7 @@ export default function SignUp() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create account');
+        throw new Error(errorData.message || t('auth.signup.error'));
       }
 
       const responseData = await response.json();
@@ -102,7 +106,7 @@ export default function SignUp() {
             const inviteResult = await acceptInvitationAction({ token: inviteToken });
             
             if (inviteResult?.data?.success) {
-              setSuccess(`Account created successfully! ${inviteResult.data.message}`);
+              setSuccess(t('auth.signup.success'));
               // Redirect to organization dashboard
               setTimeout(() => {
                 if (inviteResult.data.organizationSlug) {
@@ -112,33 +116,33 @@ export default function SignUp() {
                 }
               }, 2000);
             } else {
-              setSuccess('Account created successfully! Please sign in to accept your invitation.');
+              setSuccess(t('auth.signup.success'));
               setTimeout(() => {
                 router.push('/auth/signin');
               }, 3000);
             }
           } else {
-            setSuccess('Account created successfully! Please sign in to accept your invitation.');
+            setSuccess(t('auth.signup.success'));
             setTimeout(() => {
               router.push('/auth/signin');
             }, 3000);
           }
         } catch (inviteError) {
           console.error('Error accepting invitation:', inviteError);
-          setSuccess('Account created successfully! Please sign in to accept your invitation.');
+          setSuccess(t('auth.signup.success'));
           setTimeout(() => {
             router.push('/auth/signin');
           }, 3000);
         }
       } else {
         // Normal signup flow
-        setSuccess(`Account created successfully! ${responseData.message}`);
+        setSuccess(t('auth.signup.success'));
         setTimeout(() => {
           router.push('/auth/signin');
         }, 3000);
       }
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred. Please try again.');
+      setError(error instanceof Error ? error.message : t('auth.signup.error'));
     } finally {
       setIsLoading(false);
     }
@@ -151,7 +155,7 @@ export default function SignUp() {
       const callbackUrl = inviteToken ? `/accept-invite?token=${inviteToken}` : '/setup';
       await signIn('google', { callbackUrl });
     } catch {
-      setError('An error occurred with Google sign up.');
+      setError(t('auth.signup.error'));
     } finally {
       setIsLoading(false);
     }
@@ -171,56 +175,56 @@ export default function SignUp() {
                   height={18}
                   className="mb-7 dark:invert"
                 />
-                <p className="mb-2 text-2xl font-bold">Create an account</p>
+                <p className="mb-2 text-2xl font-bold">{t('auth.signup.title')}</p>
                 <p className="text-muted-foreground">
-                  Please enter your details to get started.
+                  {t('auth.signup.subtitle')}
                 </p>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">{t('auth.signup.name')}</Label>
                     <Input
                       id="name"
                       name="name"
                       type="text"
-                      placeholder="Enter your full name"
+                      placeholder={t('auth.signup.namePlaceholder')}
                       value={formData.name}
                       onChange={handleChange}
                       required
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t('auth.signup.email')}</Label>
                     <Input
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder={t('auth.signup.emailPlaceholder')}
                       value={formData.email}
                       onChange={handleChange}
                       required
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t('auth.signup.password')}</Label>
                     <Input
                       id="password"
                       name="password"
                       type="password"
-                      placeholder="Create a password"
+                      placeholder={t('auth.signup.passwordPlaceholder')}
                       value={formData.password}
                       onChange={handleChange}
                       required
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword">{t('auth.signup.confirmPassword')}</Label>
                     <Input
                       id="confirmPassword"
                       name="confirmPassword"
                       type="password"
-                      placeholder="Confirm your password"
+                      placeholder={t('auth.signup.confirmPasswordPlaceholder')}
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       required
@@ -237,7 +241,7 @@ export default function SignUp() {
                     </Alert>
                   )}
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
-                    {isLoading ? 'Creating account...' : 'Create account'}
+                    {isLoading ? t('auth.signup.signingUp') : t('auth.signup.signUpButton')}
                   </Button>
                   {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
                     <Button
@@ -248,14 +252,14 @@ export default function SignUp() {
                       disabled={isLoading}
                     >
                       <FcGoogle className="mr-2 size-5" />
-                      Sign up with Google
+                      {t('auth.signup.signUpWithGoogle')}
                     </Button>
                   )}
                 </form>
                 <div className="text-muted-foreground mx-auto mt-8 flex justify-center gap-1 text-sm">
-                  <p>Already have an account?</p>
+                  <p>{t('auth.signup.alreadyHaveAccount')}</p>
                   <Link href="/auth/signin" className="text-primary font-medium">
-                    Sign in
+                    {t('auth.signup.signIn')}
                   </Link>
                 </div>
               </CardContent>

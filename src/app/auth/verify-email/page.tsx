@@ -7,8 +7,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Background } from '@/components/background';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useBrowserTranslation } from '@/hooks/useBrowserTranslation';
 
 function VerifyEmailContent() {
+  const { t } = useBrowserTranslation();
   const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
   const [message, setMessage] = useState('');
   const router = useRouter();
@@ -29,25 +31,30 @@ function VerifyEmailContent() {
 
       if (response.ok) {
         setStatus('success');
-        setMessage('Your email has been verified successfully!');
+        setMessage(t('auth.verifyEmail.verified'));
+        setTimeout(() => {
+          router.push('/auth/signin');
+        }, 2000);
       } else {
         setStatus('error');
-        setMessage(data.message || 'Verification failed');
+        setMessage(data.message || t('auth.verifyEmail.invalidToken'));
       }
     } catch {
       setStatus('error');
-      setMessage('An error occurred during verification');
+      setMessage(t('auth.verifyEmail.error'));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   useEffect(() => {
     if (!token) {
       setStatus('error');
-      setMessage('No verification token provided');
+      setMessage(t('auth.verifyEmail.invalidToken'));
       return;
     }
 
     verifyEmail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, verifyEmail]);
 
   const handleContinue = () => {
@@ -62,17 +69,20 @@ function VerifyEmailContent() {
             <Card className="mx-auto w-full max-w-sm">
               <CardHeader className="text-center">
                 <h1 className="text-2xl font-bold">
-                  {status === 'verifying' && 'Verifying Email...'}
-                  {status === 'success' && 'Email Verified!'}
-                  {status === 'error' && 'Verification Failed'}
+                  {status === 'verifying' && t('auth.verifyEmail.title')}
+                  {status === 'success' && t('auth.verifyEmail.title')}
+                  {status === 'error' && t('auth.verifyEmail.title')}
                 </h1>
+                <p className="text-muted-foreground mt-2">
+                  {t('auth.verifyEmail.subtitle')}
+                </p>
               </CardHeader>
               <CardContent className="text-center">
                 {status === 'verifying' && (
                   <div className="space-y-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                     <p className="text-muted-foreground">
-                      Please wait while we verify your email address...
+                      {t('auth.verifyEmail.checkInbox')}
                     </p>
                   </div>
                 )}
@@ -82,7 +92,7 @@ function VerifyEmailContent() {
                     <div className="text-green-500 text-4xl">✓</div>
                     <p className="text-muted-foreground">{message}</p>
                     <Button onClick={handleContinue} className="w-full">
-                      Continue to Sign In
+                      {t('auth.verifyEmail.backToSignIn')}
                     </Button>
                   </div>
                 )}
@@ -92,7 +102,7 @@ function VerifyEmailContent() {
                     <div className="text-red-500 text-4xl">✗</div>
                     <p className="text-muted-foreground">{message}</p>
                     <Button onClick={() => router.push('/auth/signup')} variant="outline" className="w-full">
-                      Back to Sign Up
+                      {t('auth.signup.title')}
                     </Button>
                   </div>
                 )}

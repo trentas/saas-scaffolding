@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { canInviteMembers, canManageMembers } from '@/lib/permissions';
+import { getServerTranslation } from '@/lib/server-translation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { InviteMemberDialog } from '@/components/team/InviteMemberDialog';
 import { TeamMemberCard } from '@/components/team/TeamMemberCard';
@@ -15,6 +16,7 @@ interface TeamPageProps {
 
 export default async function TeamPage({ params }: TeamPageProps) {
   const session = await getServerSession(authOptions);
+  const { t } = await getServerTranslation();
 
   if (!session?.user?.id) {
     redirect('/auth/signin');
@@ -105,46 +107,46 @@ export default async function TeamPage({ params }: TeamPageProps) {
 
   return (
     <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold">Team</h1>
-                  <p className="text-muted-foreground">
-                    Manage your team members and their roles
-                  </p>
-                </div>
-                {canInviteMembers(userRole) && (
-                  <InviteMemberDialog
-                    organizationId={organizationId}
-                  />
-                )}
-              </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{t('team.title')}</h1>
+          <p className="text-muted-foreground">
+            {t('team.subtitle')}
+          </p>
+        </div>
+        {canInviteMembers(userRole) && (
+          <InviteMemberDialog
+            organizationId={organizationId}
+          />
+        )}
+      </div>
 
       {/* Active Members */}
       <Card>
         <CardHeader>
-          <CardTitle>Active Members</CardTitle>
+          <CardTitle>{t('team.members')}</CardTitle>
           <CardDescription>
-            {members.length} member{members.length !== 1 ? 's' : ''} in your organization
+            {members.length} {members.length === 1 ? t('team.member') : t('team.members')} in your organization
           </CardDescription>
         </CardHeader>
         <CardContent>
-                  {members.length > 0 ? (
-                    <div className="space-y-4">
-                      {members.map((member) => (
-                        <TeamMemberCard
-                          key={member.id}
-                          member={member}
-                          currentUserRole={userRole}
-                          currentUserId={session.user.id}
-                          organizationId={organizationId}
-                        />
-                      ))}
-                    </div>
-                  ) : (
+          {members.length > 0 ? (
+            <div className="space-y-4">
+              {members.map((member) => (
+                <TeamMemberCard
+                  key={member.id}
+                  member={member}
+                  currentUserRole={userRole}
+                  currentUserId={session.user.id}
+                  organizationId={organizationId}
+                />
+              ))}
+            </div>
+          ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No team members yet.</p>
+              <p>{t('team.noMembers')}</p>
               {canInviteMembers(userRole) && (
-                <p className="text-sm">Invite your first team member to get started.</p>
+                <p className="text-sm">{t('team.inviteFirstMember')}</p>
               )}
             </div>
           )}
@@ -155,22 +157,22 @@ export default async function TeamPage({ params }: TeamPageProps) {
       {invitations.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Pending Invitations</CardTitle>
+            <CardTitle>{t('team.pendingInvitations')}</CardTitle>
             <CardDescription>
-              {invitations.length} pending invitation{invitations.length !== 1 ? 's' : ''}
+              {invitations.length} pending {invitations.length === 1 ? t('team.invitation') : t('team.invitations')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-                  <div className="space-y-4">
-                    {invitations.map((invitation) => (
-                      <PendingInvitationCard
-                        key={invitation.id}
-                        invitation={invitation}
-                        currentUserRole={userRole}
-                        organizationId={organizationId}
-                      />
-                    ))}
-                  </div>
+            <div className="space-y-4">
+              {invitations.map((invitation) => (
+                <PendingInvitationCard
+                  key={invitation.id}
+                  invitation={invitation}
+                  currentUserRole={userRole}
+                  organizationId={organizationId}
+                />
+              ))}
+            </div>
           </CardContent>
         </Card>
       )}

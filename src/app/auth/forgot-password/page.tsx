@@ -9,8 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useBrowserTranslation } from '@/hooks/useBrowserTranslation';
 
 export default function ForgotPassword() {
+  const { t } = useBrowserTranslation();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -34,12 +36,12 @@ export default function ForgotPassword() {
 
       if (response.ok) {
         setIsSuccess(true);
-        setMessage(data.message);
+        setMessage(t('auth.forgotPassword.success'));
       } else {
-        setMessage(data.message || 'An error occurred');
+        setMessage(data.message || t('auth.forgotPassword.error'));
       }
     } catch {
-      setMessage('An error occurred. Please try again.');
+      setMessage(t('auth.forgotPassword.error'));
     } finally {
       setIsLoading(false);
     }
@@ -52,20 +54,20 @@ export default function ForgotPassword() {
           <div className="flex flex-col gap-4">
             <Card className="mx-auto w-full max-w-sm">
               <CardHeader className="text-center">
-                <h1 className="text-2xl font-bold">Reset Password</h1>
+                <h1 className="text-2xl font-bold">{t('auth.forgotPassword.title')}</h1>
                 <p className="text-muted-foreground">
-                  Enter your email address and we'll send you a link to reset your password.
+                  {t('auth.forgotPassword.subtitle')}
                 </p>
               </CardHeader>
               <CardContent>
                 {!isSuccess ? (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">{t('auth.forgotPassword.email')}</Label>
                       <Input
                         id="email"
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder={t('auth.forgotPassword.emailPlaceholder')}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -79,7 +81,7 @@ export default function ForgotPassword() {
                     )}
                     
                     <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Sending...' : 'Send Reset Link'}
+                      {isLoading ? t('auth.forgotPassword.sending') : t('auth.forgotPassword.sendButton')}
                     </Button>
                   </form>
                 ) : (
@@ -87,14 +89,14 @@ export default function ForgotPassword() {
                     <div className="text-green-500 text-4xl">✓</div>
                     <p className="text-muted-foreground">{message}</p>
                     <Button asChild className="w-full">
-                      <Link href="/auth/signin">Back to Sign In</Link>
+                      <Link href="/auth/signin">{t('auth.forgotPassword.backToSignIn')}</Link>
                     </Button>
                   </div>
                 )}
                 
                 <div className="text-center mt-4">
                   <Link href="/auth/signin" className="text-sm text-muted-foreground hover:text-primary">
-                    Remember your password? Sign in
+                    {t('auth.forgotPassword.backToSignIn')}
                   </Link>
                 </div>
               </CardContent>

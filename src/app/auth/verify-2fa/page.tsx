@@ -9,8 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useBrowserTranslation } from '@/hooks/useBrowserTranslation';
 
 export default function Verify2FA() {
+  const { t } = useBrowserTranslation();
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -23,7 +25,7 @@ export default function Verify2FA() {
     setMessage('');
 
     if (code.length !== 6) {
-      setMessage('Please enter a 6-digit code');
+      setMessage(t('auth.verify2fa.invalidCode'));
       setIsLoading(false);
       return;
     }
@@ -42,10 +44,10 @@ export default function Verify2FA() {
       if (response.ok) {
         router.push('/dashboard');
       } else {
-        setMessage(data.message || 'Invalid verification code');
+        setMessage(data.message || t('auth.verify2fa.invalidCode'));
       }
     } catch {
-      setMessage('An error occurred. Please try again.');
+      setMessage(t('auth.verify2fa.error'));
     } finally {
       setIsLoading(false);
     }
@@ -63,12 +65,12 @@ export default function Verify2FA() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('A new verification code has been sent to your email');
+        setMessage(t('auth.verify2fa.verifying'));
       } else {
-        setMessage(data.message || 'Failed to resend code');
+        setMessage(data.message || t('auth.verify2fa.error'));
       }
     } catch {
-      setMessage('An error occurred. Please try again.');
+      setMessage(t('auth.verify2fa.error'));
     } finally {
       setIsResending(false);
     }
@@ -81,19 +83,19 @@ export default function Verify2FA() {
           <div className="flex flex-col gap-4">
             <Card className="mx-auto w-full max-w-sm">
               <CardHeader className="text-center">
-                <h1 className="text-2xl font-bold">Two-Factor Authentication</h1>
+                <h1 className="text-2xl font-bold">{t('auth.verify2fa.title')}</h1>
                 <p className="text-muted-foreground">
-                  Enter the 6-digit code sent to your email address.
+                  {t('auth.verify2fa.subtitle')}
                 </p>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="code">Verification Code</Label>
+                    <Label htmlFor="code">{t('auth.verify2fa.code')}</Label>
                     <Input
                       id="code"
                       type="text"
-                      placeholder="000000"
+                      placeholder={t('auth.verify2fa.codePlaceholder')}
                       value={code}
                       onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       maxLength={6}
@@ -103,13 +105,13 @@ export default function Verify2FA() {
                   </div>
                   
                   {message && (
-                    <p className={`text-sm ${message.includes('sent') ? 'text-green-500' : 'text-red-500'}`}>
+                    <p className={`text-sm ${message.includes('sent') || message.includes('enviado') ? 'text-green-500' : 'text-red-500'}`}>
                       {message}
                     </p>
                   )}
                   
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Verifying...' : 'Verify Code'}
+                    {isLoading ? t('auth.verify2fa.verifying') : t('auth.verify2fa.verifyButton')}
                   </Button>
                 </form>
                 
@@ -120,7 +122,7 @@ export default function Verify2FA() {
                     disabled={isResending}
                     className="text-sm"
                   >
-                    {isResending ? 'Resending...' : "Didn't receive a code? Resend"}
+                    {isResending ? t('auth.verify2fa.verifying') : t('auth.verify2fa.resendCode')}
                   </Button>
                 </div>
               </CardContent>

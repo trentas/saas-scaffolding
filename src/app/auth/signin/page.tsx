@@ -15,8 +15,10 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useBrowserTranslation } from '@/hooks/useBrowserTranslation';
 
 export default function SignIn() {
+  const { t } = useBrowserTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -40,11 +42,11 @@ export default function SignIn() {
 
       if (result?.error) {
         if (result.error.includes('verify your email')) {
-          setError('Please verify your email before logging in. Check your inbox for a verification link.');
+          setError(t('auth.signin.emailNotVerified'));
         } else if (result.error.includes('locked')) {
-          setError('Account is temporarily locked due to too many failed login attempts. Please try again later.');
+          setError(t('auth.signin.accountLocked'));
         } else {
-          setError('Invalid email or password');
+          setError(t('auth.signin.invalidCredentials'));
         }
       } else {
         // Wait a moment for the session to be established
@@ -85,7 +87,7 @@ export default function SignIn() {
         }
       }
     } catch {
-      setError('An error occurred. Please try again.');
+      setError(t('auth.signin.error'));
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +100,7 @@ export default function SignIn() {
       const callbackUrl = inviteToken ? `/accept-invite?token=${inviteToken}` : '/setup';
       await signIn('google', { callbackUrl });
     } catch {
-      setError('An error occurred with Google sign in.');
+      setError(t('auth.signin.googleError'));
     } finally {
       setIsLoading(false);
     }
@@ -118,30 +120,30 @@ export default function SignIn() {
                   height={18}
                   className="mb-7 dark:invert"
                 />
-                <p className="mb-2 text-2xl font-bold">Welcome back</p>
+                <p className="mb-2 text-2xl font-bold">{t('auth.signin.title')}</p>
                 <p className="text-muted-foreground">
-                  Please enter your details.
+                  {t('auth.signin.subtitle')}
                 </p>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t('auth.signin.email')}</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder={t('auth.signin.emailPlaceholder')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t('auth.signin.password')}</Label>
                     <Input
                       id="password"
                       type="password"
-                      placeholder="Enter your password"
+                      placeholder={t('auth.signin.passwordPlaceholder')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -159,11 +161,11 @@ export default function SignIn() {
                         htmlFor="remember"
                         className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                       >
-                        Remember me
+                        {t('auth.signin.rememberMe')}
                       </label>
                     </div>
                     <Link href="/auth/forgot-password" className="text-primary text-sm font-medium">
-                      Forgot password
+                      {t('auth.signin.forgotPassword')}
                     </Link>
                   </div>
                   {error && (
@@ -181,23 +183,23 @@ export default function SignIn() {
                               });
                               const data = await response.json();
                               if (response.ok) {
-                                setError('Verification email sent! Check your inbox.');
+                                setError(t('auth.signin.verificationSent'));
                               } else {
-                                setError(data.message || 'Failed to resend verification email');
+                                setError(data.message || t('auth.signin.resendError'));
                               }
                             } catch {
-                              setError('Failed to resend verification email');
+                              setError(t('auth.signin.resendError'));
                             }
                           }}
                           className="text-primary hover:underline mt-1"
                         >
-                          Resend verification email
+                          {t('auth.signin.resendVerification')}
                         </button>
                       )}
                     </div>
                   )}
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
-                    {isLoading ? 'Signing in...' : 'Sign in'}
+                    {isLoading ? t('auth.signin.signingIn') : t('auth.signin.signInButton')}
                   </Button>
                   {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
                     <Button
@@ -208,14 +210,14 @@ export default function SignIn() {
                       disabled={isLoading}
                     >
                       <FcGoogle className="mr-2 size-5" />
-                      Sign in with Google
+                      {t('auth.signin.signInWithGoogle')}
                     </Button>
                   )}
                 </form>
                 <div className="text-muted-foreground mx-auto mt-8 flex justify-center gap-1 text-sm">
-                  <p>Don&apos;t have an account?</p>
+                  <p>{t('auth.signin.noAccount')}</p>
                   <Link href="/auth/signup" className="text-primary font-medium">
-                    Sign up
+                    {t('auth.signin.signUp')}
                   </Link>
                 </div>
               </CardContent>

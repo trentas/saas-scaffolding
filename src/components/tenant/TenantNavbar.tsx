@@ -51,7 +51,7 @@ export function TenantNavbar() {
               alt={currentOrganization?.name || 'Logo'}
               width={120}
               height={24}
-              className="h-6 w-auto dark:invert"
+              className="h-6 w-auto"
               unoptimized
             />
           </Link>
