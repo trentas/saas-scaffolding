@@ -43,15 +43,15 @@ export function TenantNavbar() {
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href={currentOrganization ? `/${currentOrganization.slug}/dashboard` : '/'} className="flex-shrink-0">
+      <div className="flex h-16 items-center justify-between">
+        <div className="flex items-center gap-3 pl-3">
+          <Link href={currentOrganization ? `/${currentOrganization.slug}/dashboard` : '/'} className="flex-shrink-0 max-w-[calc(16rem-12px)]">
             <Image
               src={logoUrl}
               alt={currentOrganization?.name || 'Logo'}
               width={120}
               height={24}
-              className="h-6 w-auto"
+              className="h-6 w-auto max-w-full object-contain"
               unoptimized
             />
           </Link>
