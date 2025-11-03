@@ -8,12 +8,14 @@ A production-ready multi-tenant SaaS scaffolding built with Next.js 15, Supabase
 - ✅ **Multi-tenant Architecture** - Subdomain-based tenant routing (`company.app.com`)
 - ✅ **Secure Authentication** - NextAuth.js with email verification, password reset, and 2FA
 - ✅ **User Management** - Role-based access control (owner/admin/member)
-- ✅ **Team Management** - Email invitations, role management, and member control
-- ✅ **User Profile & Settings** - Complete profile management, password change, 2FA, theme preferences
+- ✅ **Team Management** - Email invitations, role management, member control, and ownership transfer
+- ✅ **User Profile & Settings** - Complete profile management, password change, 2FA, theme preferences (persists across sessions)
+- ✅ **Organization Management** - Logo upload, settings, and organization deletion (owner only)
 - ✅ **Database** - Supabase with Row Level Security (RLS) policies
 - ✅ **Billing** - Stripe integration for subscriptions and payments
-- ✅ **Email System** - Resend.com integration for verification and notifications
+- ✅ **Email System** - Resend.com integration for verification, notifications, and ownership transfer alerts
 - ✅ **Security Features** - Account locking, strong passwords, session management
+- ✅ **Theme System** - Light/Dark/System mode with cross-browser persistence
 - ✅ **UI Components** - shadcn/ui with Tailwind CSS 4
 - ✅ **Feature Flags** - Modular feature system for easy customization
 
@@ -87,6 +89,7 @@ STRIPE_ENTERPRISE_PRICE_ID=price_...
 # App Configuration (Optional)
 NEXT_PUBLIC_APP_NAME="My SaaS"
 NEXT_PUBLIC_APP_URL=https://app.example.com
+NEXT_PUBLIC_DEFAULT_LOGO_URL=/logo.svg
 ```
 
 ### 3. Database Setup
@@ -110,11 +113,25 @@ NEXT_PUBLIC_APP_URL=https://app.example.com
 #### Database Schema
 
 The scaffolding includes these main tables:
-- `organizations` - Tenant data with slug, plan, settings
-- `users` - User profiles
-- `organization_members` - User-organization relationships with roles
+- `organizations` - Tenant data with slug, plan, settings, and logo_url
+- `users` - User profiles with preferences and theme settings
+- `organization_members` - User-organization relationships with roles (owner/admin/member)
 - `invitations` - Email invitations with tokens
 - `subscriptions` - Stripe subscription data
+
+#### Running Migrations
+
+Run migrations in order:
+1. `001_initial_schema.sql` - Initial database schema
+2. `002_auth_enhancements.sql` - Authentication enhancements
+3. `003_user_preferences.sql` - User preferences and MFA settings
+4. `004_add_logo_url.sql` - Organization logo support
+
+#### Supabase Storage Setup
+
+1. Create a storage bucket named `organization-logos` in Supabase Dashboard
+2. Set the bucket to public access
+3. Configure bucket policies for uploads (users can upload, public can read)
 
 ### 4. Stripe Setup (Optional)
 
@@ -155,15 +172,25 @@ Visit `http://localhost:3000` to see your application.
 │   ├── /setup (organization onboarding)
 │   ├── /[tenant] (tenant-specific routes)
 │   │   ├── /dashboard
-│   │   ├── /profile
-│   │   ├── /team
+│   │   ├── /profile (user profile & settings)
+│   │   ├── /team (team management)
 │   │   ├── /billing
-│   │   └── /settings
+│   │   ├── /settings (organization settings)
+│   │   ├── /analytics (placeholder)
+│   │   ├── /api-keys (placeholder)
+│   │   └── /webhooks (placeholder)
 │   └── /api (API routes)
+│       ├── /auth (authentication endpoints)
+│       ├── /organizations (organization management)
+│       └── /webhooks (webhook handlers)
 ├── /components
 │   ├── /ui (shadcn components)
-│   ├── /tenant (tenant-specific components)
-│   └── /providers (React providers)
+│   ├── /tenant (tenant-specific components: Navbar, Sidebar, OrganizationSwitcher)
+│   ├── /organization (organization components: LogoUpload, DeleteOrganizationDialog)
+│   ├── /profile (profile components: ChangePasswordDialog, Enable2FADialog, etc.)
+│   ├── /team (team components: TeamMemberCard, TransferOwnershipDialog)
+│   ├── /providers (React providers)
+│   └── theme-initializer.tsx (Theme persistence component)
 ├── /features (modular feature system)
 │   ├── /billing
 │   ├── /analytics
@@ -175,7 +202,11 @@ Visit `http://localhost:3000` to see your application.
 │   ├── supabase.ts (Supabase client)
 │   ├── tenant.ts (tenant utilities)
 │   ├── stripe.ts (Stripe integration)
-│   └── permissions.ts (role-based access)
+│   ├── storage.ts (Supabase Storage utilities)
+│   ├── email.ts (Email templates and sending)
+│   ├── permissions.ts (role-based access)
+│   ├── form-schema.ts (Zod validation schemas)
+│   └── translations.ts (i18n translations)
 ├── /config
 │   └── features.config.ts (feature flags)
 ├── /middleware.ts (subdomain routing)
@@ -216,10 +247,15 @@ export const featuresConfig = {
 
 ### Theming
 
-The scaffolding uses the Mainline template's theme system:
-- Edit `src/styles/globals.css` for global styles
-- Use Tailwind CSS classes for component styling
-- Leverage shadcn/ui component variants
+The scaffolding includes a fully functional theme system:
+- **Theme Options**: Light, Dark, and System (follows OS preference)
+- **Persistence**: Theme preference saved in database and persists across browsers/sessions
+- **Organization Logos**: Upload custom logos that appear in navbar (stored in Supabase Storage)
+- **Default Logo**: Set `NEXT_PUBLIC_DEFAULT_LOGO_URL` environment variable for fallback logo
+- **Customization**: 
+  - Edit `src/styles/globals.css` for global styles
+  - Use Tailwind CSS classes for component styling
+  - Leverage shadcn/ui component variants
 
 ### Database Modifications
 
@@ -246,23 +282,48 @@ Make sure to set these in your production environment:
 
 ## Authentication Flow
 
-1. **Sign Up**: User creates account → redirected to organization setup
-2. **Organization Setup**: User creates organization → becomes owner
-3. **Sign In**: User signs in → redirected to organization dashboard
-4. **Multi-tenant**: Users can belong to multiple organizations
+1. **Sign Up**: User creates account → email verification required
+2. **Organization Setup**: User creates organization → becomes owner automatically
+3. **Sign In**: User signs in → automatically redirected to organization dashboard (or setup if no orgs)
+4. **Multi-tenant**: Users can belong to multiple organizations with different roles
+5. **Session Management**: Theme preferences and user data loaded automatically on login
 
 ## Role-Based Access Control
 
-- **Owner**: Full control over organization, billing, user management
-- **Admin**: Can manage users and settings, cannot access billing
-- **Member**: Read-only access to organization data
+- **Owner**: 
+  - Full control over organization, billing, user management
+  - Can transfer ownership to another member (becomes Admin after transfer)
+  - Can delete organization
+  - Cannot remove themselves from organization
+  - Can only delete account if not owner of any organization
+- **Admin**: 
+  - Can manage users (invite, remove, change roles - except owners)
+  - Can access organization settings and upload logo
+  - Cannot access billing or delete organization
+- **Member**: 
+  - Read-only access to organization data
+  - Can view team members and invitations
+  - Cannot manage users or settings
+
+### Organization Rules
+- Each organization must have exactly one owner
+- Only the owner can delete the organization
+- Ownership transfer sends email notification to new owner
+- Owner cannot demote themselves (must transfer ownership first)
 
 ## API Routes
 
-- `/api/auth/signup` - User registration
-- `/api/organizations` - Organization management
-- `/api/webhooks/stripe` - Stripe webhook handling
+### Authentication
 - `/api/auth/[...nextauth]` - NextAuth.js endpoints
+- `/api/auth/signup` - User registration
+- `/api/auth/get-user-orgs` - Get user organizations (for login redirect)
+
+### Organizations
+- `/api/organizations` - Organization CRUD operations
+- `/api/organizations/[organizationId]/logo` - Upload organization logo (POST) and delete (DELETE)
+
+### Webhooks
+- `/api/webhooks/stripe` - Stripe webhook handling
 
 ## Contributing
 
@@ -283,12 +344,39 @@ For questions and support:
 - Check the documentation
 - Review the example implementations
 
+## Key Features Details
+
+### User Profile & Settings
+- **Profile Management**: Update name, view email, account creation date, last login
+- **Security**: Change password with strength validation, enable/disable 2FA (mocked)
+- **Preferences**: 
+  - Theme selection (Light/Dark/System) with cross-browser persistence
+  - Language preferences (pt-BR, en-US)
+- **Account Management**: Delete account (restricted if user is owner of any organization)
+
+### Organization Settings
+- **Logo Upload**: Upload custom organization logos (PNG, JPG, GIF, SVG, WebP)
+- **Logo Display**: Logo appears in top-left corner of all tenant pages
+- **Organization Deletion**: Owner can delete organization (requires confirmation)
+- **Settings Access**: Only owners and admins can access organization settings
+
+### Team Management
+- **Member Invitations**: Send email invitations to join organization
+- **Role Management**: Change member roles (owner/admin/member)
+- **Member Removal**: Remove members (with restrictions based on role)
+- **Ownership Transfer**: Owner can transfer ownership to another member
+- **Email Notifications**: Automatic emails for invitations and ownership transfers
+
 ## Roadmap
 
 - ✅ **Email invitation system** - Team member invitations with email verification
 - ✅ **User Profile & Settings** - Complete profile management with 2FA, theme, and preferences
+- ✅ **Organization Management** - Logo upload, settings, and organization deletion
+- ✅ **Theme Persistence** - Theme preference saved across sessions and browsers
+- ✅ **Ownership Transfer** - Transfer organization ownership with email notifications
 - [ ] Advanced analytics dashboard
 - [ ] API documentation
 - [ ] Advanced billing features (usage limits, plan management)
 - [ ] Mobile app support
 - [ ] White-label customization
+- [ ] Organization export/import
