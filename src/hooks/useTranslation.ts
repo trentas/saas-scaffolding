@@ -32,13 +32,13 @@ export function useTranslation() {
         return stored as Language;
       }
     }
-    return 'pt-BR';
+    return 'en-US';
   }, [session]);
 
   const t = useMemo(() => {
     const translations_data = translations[language];
     
-    return (path: string): string => {
+    return (path: string, params?: Record<string, string | number>): string => {
       const keys = path.split('.');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let value: any = translations_data;
@@ -51,7 +51,20 @@ export function useTranslation() {
         }
       }
       
-      return typeof value === 'string' ? value : path;
+      if (typeof value !== 'string') {
+        return path;
+      }
+
+      // Replace placeholders with params
+      if (params) {
+        let result = value;
+        for (const [key, val] of Object.entries(params)) {
+          result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), String(val));
+        }
+        return result;
+      }
+      
+      return value;
     };
   }, [language]);
 

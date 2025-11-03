@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react';
 
 import { useTenant } from './TenantProvider';
 import { OrganizationSwitcher } from './OrganizationSwitcher';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getUserAvatarUrl } from '@/lib/avatar';
@@ -26,6 +27,7 @@ export function TenantNavbar() {
   const { data: session } = useSession();
   const { tenant, role } = useTenant();
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   // Get current organization info
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,7 +95,7 @@ export function TenantNavbar() {
                     <DropdownMenuItem asChild>
                       <Link href={`/${currentOrganization.slug}/profile`}>
                         <Settings className="mr-2 h-4 w-4" />
-                        <span>Profile & Settings</span>
+                        <span>{t('navigation.profileAndSettings')}</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -102,7 +104,7 @@ export function TenantNavbar() {
                 {(!currentOrganization || pathname === '/setup') && <DropdownMenuSeparator />}
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
+                  <span>{t('navigation.signOut')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

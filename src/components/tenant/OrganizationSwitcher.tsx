@@ -6,6 +6,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { ChevronDown, Building2, Plus, Settings } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +32,7 @@ export function OrganizationSwitcher({ currentOrganization }: OrganizationSwitch
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const organizations = (session?.user as any)?.organizations || [];
@@ -72,11 +75,11 @@ export function OrganizationSwitcher({ currentOrganization }: OrganizationSwitch
               <>
                 <span className="text-sm font-medium">{currentOrganization.name}</span>
                 <span className="text-xs text-muted-foreground capitalize">
-                  {currentOrganization.role}
+                  {t(`roles.${currentOrganization.role}` as any)}
                 </span>
               </>
             ) : (
-              <span className="text-sm font-medium">Create Organization</span>
+              <span className="text-sm font-medium">{t('navigation.createOrganization')}</span>
             )}
           </div>
           <ChevronDown className="h-4 w-4 ml-auto" />
@@ -85,7 +88,7 @@ export function OrganizationSwitcher({ currentOrganization }: OrganizationSwitch
       <DropdownMenuContent align="start" className="w-64">
         <div className="px-2 py-1.5">
           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Organizations
+            {t('navigation.organizations')}
           </p>
         </div>
         <DropdownMenuSeparator />
@@ -104,7 +107,7 @@ export function OrganizationSwitcher({ currentOrganization }: OrganizationSwitch
             <div className="flex flex-col items-start">
               <span className="text-sm font-medium">{org.name}</span>
               <span className="text-xs text-muted-foreground capitalize">
-                {org.role}
+                {t(`roles.${org.role}` as any)}
               </span>
             </div>
             {currentOrganization && org.slug === currentOrganization.slug && (
@@ -123,7 +126,7 @@ export function OrganizationSwitcher({ currentOrganization }: OrganizationSwitch
                     <Settings className="h-3 w-3" />
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm">Organization Settings</span>
+                <span className="text-sm">{t('navigation.organizationSettings')}</span>
               </Link>
             </DropdownMenuItem>
           </>
@@ -138,7 +141,7 @@ export function OrganizationSwitcher({ currentOrganization }: OrganizationSwitch
               <Plus className="h-3 w-3" />
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm">Create organization</span>
+          <span className="text-sm">{t('navigation.createOrganization')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

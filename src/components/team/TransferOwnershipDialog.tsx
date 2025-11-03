@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Crown, Loader2, AlertTriangle } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { transferOwnershipAction } from '@/actions/team-actions';
 import { TeamMember } from '@/actions/team-actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -32,6 +33,7 @@ export function TransferOwnershipDialog({
   organizationId,
   children 
 }: TransferOwnershipDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,16 +46,16 @@ export function TransferOwnershipDialog({
       });
 
       if (result?.data?.success) {
-        toast.success(result.data.message);
+        toast.success(t('team.transferOwnershipDialog.success'));
         setOpen(false);
         // Force page reload to refresh session with new role
         window.location.reload();
       } else {
-        toast.error(result?.data?.message || 'Failed to transfer ownership');
+        toast.error(result?.data?.message || t('team.transferOwnershipDialog.error'));
       }
     } catch (error) {
       console.error('Error transferring ownership:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to transfer ownership');
+      toast.error(error instanceof Error ? error.message : t('team.transferOwnershipDialog.error'));
     } finally {
       setIsLoading(false);
     }
@@ -71,18 +73,17 @@ export function TransferOwnershipDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-orange-600">
             <Crown className="h-5 w-5" />
-            Transfer Organization Ownership
+            {t('team.transferOwnershipDialog.title')}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            You are about to transfer ownership of this organization to another member.
+            {t('team.transferOwnershipDialog.description', { name: member.name, email: member.email })}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            This action will make you an Admin and transfer full ownership to the selected member.
-            You will lose the ability to delete the organization and manage certain settings.
+            {t('team.transferOwnershipDialog.warning')}
           </AlertDescription>
         </Alert>
 
@@ -103,21 +104,21 @@ export function TransferOwnershipDialog({
               <h4 className="font-medium">{member.name}</h4>
               <p className="text-sm text-muted-foreground">{member.email}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Current role: {member.role}
+                {t('team.transferOwnershipDialog.newOwnerLabel')}: {t(`roles.${member.role}` as any)}
               </p>
             </div>
           </div>
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isLoading}>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleTransfer}
             disabled={isLoading}
             className="bg-orange-600 hover:bg-orange-700"
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Transfer Ownership
+            {t('team.transferOwnershipDialog.transferButton')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -2,16 +2,19 @@
 
 import { Wrench } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function BillingPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Billing</h1>
+          <h1 className="text-3xl font-bold">{t('billing.title')}</h1>
           <p className="text-muted-foreground">
-            Manage your subscription and billing information
+            {t('billing.subtitle')}
           </p>
         </div>
       </div>
@@ -20,15 +23,15 @@ export default function BillingPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wrench className="h-5 w-5" />
-            Under Development
+            {t('billing.underDevelopment')}
           </CardTitle>
           <CardDescription>
-            We're working on implementing billing features
+            {t('billing.underDevelopmentDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-center py-8 text-muted-foreground">
-            Billing features are under development. Please check back soon.
+            {t('billing.underDevelopmentMessage')}
           </p>
         </CardContent>
       </Card>

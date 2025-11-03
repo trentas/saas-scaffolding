@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { toast } from 'sonner';
 import { Upload, Loader2, XCircle } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getUserAvatarUrl } from '@/lib/avatar';
@@ -18,6 +19,7 @@ interface AvatarUploadProps {
 }
 
 export function AvatarUpload({ userId, currentAvatarUrl, userEmail, userName }: AvatarUploadProps) {
+  const { t } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatarUrl);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,13 +85,13 @@ export function AvatarUpload({ userId, currentAvatarUrl, userEmail, userName }: 
 
       if (data.avatarUrl) {
         setPreviewUrl(data.avatarUrl);
-        toast.success('Avatar uploaded successfully');
+        toast.success(t('profile.avatarUpload.success'));
         // Refresh the page to update the session
         window.location.reload();
       }
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to upload avatar');
+      toast.error(error instanceof Error ? error.message : t('profile.avatarUpload.error'));
       // Reset preview on error
       setPreviewUrl(currentAvatarUrl);
     } finally {
@@ -115,11 +117,11 @@ export function AvatarUpload({ userId, currentAvatarUrl, userEmail, userName }: 
       }
 
       setPreviewUrl(null);
-      toast.success('Avatar removed successfully');
+      toast.success(t('profile.avatarUpload.removeSuccess'));
       window.location.reload();
     } catch (error) {
       console.error('Error removing avatar:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to remove avatar');
+      toast.error(error instanceof Error ? error.message : t('profile.avatarUpload.removeError'));
     } finally {
       setIsUploading(false);
     }
@@ -164,12 +166,12 @@ export function AvatarUpload({ userId, currentAvatarUrl, userEmail, userName }: 
               {isUploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
+                  {t('profile.avatarUpload.uploading')}
                 </>
               ) : (
                 <>
                   <Upload className="mr-2 h-4 w-4" />
-                  {currentAvatarUrl ? 'Change Avatar' : 'Upload Avatar'}
+                  {currentAvatarUrl ? t('profile.changeAvatar') : t('profile.uploadAvatar')}
                 </>
               )}
             </Button>
@@ -182,20 +184,20 @@ export function AvatarUpload({ userId, currentAvatarUrl, userEmail, userName }: 
                 disabled={isUploading}
               >
                 <XCircle className="mr-2 h-4 w-4" />
-                Remove
+                {t('profile.removeAvatar')}
               </Button>
             )}
           </div>
         </div>
         <p className="text-xs text-muted-foreground">
           {currentAvatarUrl 
-            ? 'Using custom avatar' 
+            ? t('profile.avatarStatus.custom') 
             : avatarUrl 
-              ? 'Using Gravatar' 
-              : 'Upload an avatar or set one up on Gravatar.com'}
+              ? t('profile.avatarStatus.gravatar') 
+              : t('profile.avatarStatus.none')}
         </p>
         <p className="text-xs text-muted-foreground">
-          Recommended: Square image, max 5MB. Supported formats: JPEG, PNG, GIF, WebP, SVG
+          {t('profile.avatarUpload.recommendedSize')}
         </p>
       </div>
     </div>

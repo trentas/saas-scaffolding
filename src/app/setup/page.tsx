@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 import { useSession } from 'next-auth/react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { Background } from '@/components/background';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { generateTenantSlug, isValidTenantSlug } from '@/lib/tenant-utils';
 export default function Setup() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     organizationName: '',
     organizationSlug: '',
@@ -67,14 +69,14 @@ export default function Setup() {
 
     // Validate organization name
     if (!formData.organizationName.trim()) {
-      setError('Organization name is required');
+      setError(t('setup.nameRequired'));
       setIsLoading(false);
       return;
     }
 
     // Validate slug
     if (!formData.organizationSlug || !isValidTenantSlug(formData.organizationSlug)) {
-      setError('Organization slug must be 3-50 characters long and contain only letters, numbers, and hyphens');
+      setError(t('setup.slugInvalid'));
       setIsLoading(false);
       return;
     }
@@ -139,46 +141,46 @@ export default function Setup() {
                   height={18}
                   className="mb-7 dark:invert"
                 />
-                <CardTitle className="text-2xl font-bold">Create your organization</CardTitle>
+                <CardTitle className="text-2xl font-bold">{t('setup.title')}</CardTitle>
                 <p className="text-muted-foreground text-center">
-                  Let's set up your organization to get started.
+                  {t('setup.description')}
                 </p>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="organizationName">Organization Name</Label>
+                    <Label htmlFor="organizationName">{t('setup.organizationName')}</Label>
                     <Input
                       id="organizationName"
                       type="text"
-                      placeholder="My Company"
+                      placeholder={t('setup.organizationNamePlaceholder')}
                       value={formData.organizationName}
                       onChange={handleOrganizationNameChange}
                       required
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="organizationSlug">Organization URL</Label>
+                    <Label htmlFor="organizationSlug">{t('setup.organizationSlug')}</Label>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">app.com/</span>
                       <Input
                         id="organizationSlug"
                         type="text"
-                        placeholder="my-company"
+                        placeholder={t('setup.organizationSlugPlaceholder')}
                         value={formData.organizationSlug}
                         onChange={handleOrganizationSlugChange}
                         required
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      This will be your organization's unique URL. You can change it later.
+                      {t('setup.organizationSlugDescription')}
                     </p>
                   </div>
                   {error && (
                     <p className="text-sm text-red-500">{error}</p>
                   )}
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? 'Creating organization...' : 'Create organization'}
+                    {isLoading ? t('setup.creating') : t('setup.createButton')}
                   </Button>
                 </form>
               </CardContent>

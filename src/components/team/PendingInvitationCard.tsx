@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Mail, X, RotateCcw, Loader2 } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { resendInvitationAction, cancelInvitationAction } from '@/actions/team-actions';
 import { PendingInvitation } from '@/actions/team-actions';
 import { canResendInvitations, canCancelInvitations } from '@/lib/permissions';
@@ -31,6 +32,7 @@ export function PendingInvitationCard({
   currentUserRole, 
   organizationId
 }: PendingInvitationCardProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
@@ -52,11 +54,11 @@ export function PendingInvitationCard({
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays <= 0) {
-      return 'Expired';
+      return t('team.invitationCard.expired');
     } else if (diffDays === 1) {
-      return 'Expires tomorrow';
+      return t('team.invitationCard.expiresIn', { days: 1 });
     } else {
-      return `Expires in ${diffDays} days`;
+      return t('team.invitationCard.expiresIn', { days: diffDays });
     }
   };
 
@@ -69,13 +71,13 @@ export function PendingInvitationCard({
       });
 
       if (result?.data?.success) {
-        toast.success(result.data.message);
+        toast.success(t('team.invitationCard.resendSuccess'));
       } else {
-        toast.error(result?.data?.message || 'Failed to resend invitation');
+        toast.error(result?.data?.message || t('team.invitationCard.resendSuccess'));
       }
     } catch (error) {
       console.error('Error resending invitation:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to resend invitation');
+      toast.error(error instanceof Error ? error.message : t('team.invitationCard.resendSuccess'));
     } finally {
       setIsLoading(false);
     }
@@ -90,14 +92,14 @@ export function PendingInvitationCard({
       });
 
       if (result?.data?.success) {
-        toast.success(result.data.message);
+        toast.success(t('team.invitationCard.cancelSuccess'));
         setShowCancelDialog(false);
       } else {
-        toast.error(result?.data?.message || 'Failed to cancel invitation');
+        toast.error(result?.data?.message || t('team.invitationCard.cancelSuccess'));
       }
     } catch (error) {
       console.error('Error cancelling invitation:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to cancel invitation');
+      toast.error(error instanceof Error ? error.message : t('team.invitationCard.cancelSuccess'));
     } finally {
       setIsLoading(false);
     }
@@ -117,11 +119,11 @@ export function PendingInvitationCard({
           <div>
             <h4 className="font-medium">{invitation.email}</h4>
             <p className="text-sm text-muted-foreground">
-              Invited by {invitation.invitedByName}
+              {t('team.invitationCard.invitedBy')} {invitation.invitedByName}
             </p>
             <div className="flex gap-2 mt-1">
               <Badge variant={getRoleBadgeVariant(invitation.role)} className="text-xs">
-                {invitation.role}
+                {t(`roles.${invitation.role}` as any)}
               </Badge>
               <Badge 
                 variant={isExpired ? 'destructive' : 'secondary'} 
@@ -148,7 +150,7 @@ export function PendingInvitationCard({
                   size="sm"
                   onClick={handleResendInvitation}
                   disabled={isLoading}
-                  title="Resend invitation"
+                  title={t('team.invitationCard.resendButton')}
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -163,7 +165,7 @@ export function PendingInvitationCard({
                   size="sm"
                   onClick={() => setShowCancelDialog(true)}
                   disabled={isLoading}
-                  title="Cancel invitation"
+                  title={t('team.invitationCard.cancelButton')}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -176,21 +178,20 @@ export function PendingInvitationCard({
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Invitation</AlertDialogTitle>
+            <AlertDialogTitle>{t('team.invitationCard.cancelDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to cancel the invitation for <strong>{invitation.email}</strong>? 
-              They will no longer be able to use this invitation link to join the organization.
+              {t('team.invitationCard.cancelDialog.description', { email: invitation.email })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isLoading}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancelInvitation}
               disabled={isLoading}
               className="bg-red-600 hover:bg-red-700"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Cancel Invitation
+              {t('team.invitationCard.cancelDialog.confirmButton')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

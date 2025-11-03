@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { UserPlus, Loader2 } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { inviteMemberAction } from '@/actions/team-actions';
 import { inviteMemberSchema, type InviteMemberData } from '@/lib/form-schema';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ interface InviteMemberDialogProps {
 }
 
 export function InviteMemberDialog({ organizationId }: InviteMemberDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -58,15 +60,15 @@ export function InviteMemberDialog({ organizationId }: InviteMemberDialogProps) 
       const result = await inviteMemberAction(data);
       
       if (result?.data?.success) {
-        toast.success(result.data.message);
+        toast.success(t('team.inviteDialog.success'));
         form.reset();
         setOpen(false);
       } else {
-        toast.error(result?.data?.message || 'Failed to send invitation');
+        toast.error(result?.data?.message || t('team.inviteDialog.error'));
       }
     } catch (error) {
       console.error('Error inviting member:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to send invitation');
+      toast.error(error instanceof Error ? error.message : t('team.inviteDialog.error'));
     } finally {
       setIsLoading(false);
     }
@@ -77,14 +79,14 @@ export function InviteMemberDialog({ organizationId }: InviteMemberDialogProps) 
       <DialogTrigger asChild>
         <Button>
           <UserPlus className="mr-2 h-4 w-4" />
-          Invite Member
+          {t('team.inviteMember')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Invite Team Member</DialogTitle>
+          <DialogTitle>{t('team.inviteDialog.title')}</DialogTitle>
           <DialogDescription>
-            Send an invitation to a new team member. They will receive an email with instructions to join.
+            {t('team.inviteDialog.description')}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -94,11 +96,11 @@ export function InviteMemberDialog({ organizationId }: InviteMemberDialogProps) 
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>{t('team.inviteDialog.emailLabel')}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="Enter email address"
+                      placeholder={t('team.inviteDialog.emailPlaceholder')}
                       {...field}
                     />
                   </FormControl>
@@ -111,16 +113,16 @@ export function InviteMemberDialog({ organizationId }: InviteMemberDialogProps) 
               name="role"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>{t('team.inviteDialog.roleLabel')}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
+                        <SelectValue placeholder={t('team.inviteDialog.roleLabel')} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="member">Member</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="member">{t('roles.member')}</SelectItem>
+                      <SelectItem value="admin">{t('roles.admin')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -134,11 +136,11 @@ export function InviteMemberDialog({ organizationId }: InviteMemberDialogProps) 
                 onClick={() => setOpen(false)}
                 disabled={isLoading}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Send Invitation
+                {t('team.inviteDialog.inviteButton')}
               </Button>
             </DialogFooter>
           </form>

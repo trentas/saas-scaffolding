@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Upload, Loader2, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -15,6 +16,7 @@ interface LogoUploadProps {
 }
 
 export function LogoUpload({ organizationId, currentLogoUrl, organizationName }: LogoUploadProps) {
+  const { t } = useTranslation();
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogoUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -70,13 +72,13 @@ export function LogoUpload({ organizationId, currentLogoUrl, organizationName }:
 
       if (data.logoUrl) {
         setPreviewUrl(data.logoUrl);
-        toast.success('Logo uploaded successfully');
+        toast.success(t('settings.logoUpload.success'));
         // Refresh the page to update the navbar
         window.location.reload();
       }
     } catch (error) {
       console.error('Error uploading logo:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to upload logo');
+      toast.error(error instanceof Error ? error.message : t('settings.logoUpload.error'));
       // Reset preview on error
       setPreviewUrl(currentLogoUrl || null);
     } finally {
@@ -93,9 +95,9 @@ export function LogoUpload({ organizationId, currentLogoUrl, organizationName }:
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Organization Logo</CardTitle>
+        <CardTitle>{t('settings.logoUpload.title')}</CardTitle>
         <CardDescription>
-          Upload a custom logo for {organizationName}. This will appear in the top-left corner of all pages.
+          {t('settings.logoUpload.description', { name: organizationName })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -116,9 +118,9 @@ export function LogoUpload({ organizationId, currentLogoUrl, organizationName }:
               )}
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">Current Logo</p>
+              <p className="text-sm font-medium">{t('settings.logoUpload.currentLogo')}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {currentLogoUrl ? 'Custom logo' : 'Using default logo'}
+                {currentLogoUrl ? t('settings.logoUpload.customLogo') : t('settings.logoUpload.defaultLogo')}
               </p>
             </div>
           </div>
@@ -143,17 +145,17 @@ export function LogoUpload({ organizationId, currentLogoUrl, organizationName }:
               {isUploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
+                  {t('settings.logoUpload.uploading')}
                 </>
               ) : (
                 <>
                   <Upload className="mr-2 h-4 w-4" />
-                  {currentLogoUrl ? 'Change Logo' : 'Upload Logo'}
+                  {currentLogoUrl ? t('settings.logoUpload.changeLogo') : t('settings.logoUpload.uploadLogo')}
                 </>
               )}
             </Button>
             <p className="text-xs text-muted-foreground mt-2">
-              Recommended: Square image, max 5MB. Supported formats: JPEG, PNG, GIF, WebP, SVG
+              {t('settings.logoUpload.recommendedSize')}
             </p>
           </div>
         </div>

@@ -2,16 +2,19 @@
 
 import { Webhook } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function WebhooksPage() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Webhooks</h1>
+          <h1 className="text-3xl font-bold">{t('webhooks.title')}</h1>
           <p className="text-muted-foreground">
-            Configure webhooks to receive real-time notifications
+            {t('webhooks.subtitle')}
           </p>
         </div>
       </div>
@@ -20,15 +23,15 @@ export default function WebhooksPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Webhook className="h-5 w-5" />
-            Under Development
+            {t('webhooks.underDevelopment')}
           </CardTitle>
           <CardDescription>
-            We're working on implementing webhooks management
+            {t('webhooks.underDevelopmentDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-center py-8 text-muted-foreground">
-            Webhooks management is under development. Please check back soon.
+            {t('webhooks.underDevelopmentMessage')}
           </p>
         </CardContent>
       </Card>

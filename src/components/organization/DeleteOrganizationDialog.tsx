@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Trash2, Loader2, AlertTriangle } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { deleteOrganizationAction } from '@/actions/organization-actions';
 import { deleteOrganizationSchema, type DeleteOrganizationData } from '@/lib/form-schema';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,7 @@ export function DeleteOrganizationDialog({
   organizationId,
   organizationName 
 }: DeleteOrganizationDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -56,7 +58,7 @@ export function DeleteOrganizationDialog({
   const onSubmit = async (data: DeleteOrganizationData) => {
     if (data.confirmText !== organizationName) {
       form.setError('confirmText', {
-        message: 'Confirmation text must match the organization name',
+        message: t('settings.deleteOrganizationDialog.error'),
       });
       return;
     }
@@ -66,15 +68,15 @@ export function DeleteOrganizationDialog({
       const result = await deleteOrganizationAction(data);
 
       if (result?.data?.success) {
-        toast.success('Organization deleted successfully');
+        toast.success(t('settings.deleteOrganizationDialog.success'));
         setOpen(false);
         router.push('/');
       } else {
-        toast.error(result?.data?.message || 'Failed to delete organization');
+        toast.error(result?.data?.message || t('settings.deleteOrganizationDialog.error'));
       }
     } catch (error) {
       console.error('Error deleting organization:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to delete organization');
+      toast.error(error instanceof Error ? error.message : t('settings.deleteOrganizationDialog.error'));
     } finally {
       setIsLoading(false);
     }
@@ -89,18 +91,17 @@ export function DeleteOrganizationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
             <Trash2 className="h-5 w-5" />
-            Delete Organization
+            {t('settings.deleteOrganizationDialog.title')}
           </DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete the organization and all its data.
+            {t('settings.deleteOrganizationDialog.description', { name: organizationName })}
           </DialogDescription>
         </DialogHeader>
 
         <Alert variant="destructive" className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            This will permanently delete the organization <strong>{organizationName}</strong>, 
-            all team members, invitations, and associated data. This action cannot be undone.
+            {t('settings.deleteOrganizationDialog.warning')}
           </AlertDescription>
         </Alert>
 
@@ -111,7 +112,7 @@ export function DeleteOrganizationDialog({
               name="confirmText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type the organization name to confirm</FormLabel>
+                  <FormLabel>{t('settings.deleteOrganizationDialog.confirmLabel', { name: organizationName })}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder={organizationName}
@@ -133,7 +134,7 @@ export function DeleteOrganizationDialog({
                 }}
                 disabled={isLoading}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 type="submit"
@@ -141,7 +142,7 @@ export function DeleteOrganizationDialog({
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Delete Organization Permanently
+                {t('settings.deleteOrganizationDialog.confirmButton')}
               </Button>
             </DialogFooter>
           </form>

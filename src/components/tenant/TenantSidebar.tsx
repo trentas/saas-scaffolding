@@ -14,11 +14,12 @@ import {
 } from 'lucide-react';
 
 import { useTenant } from './TenantProvider';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { cn } from '@/lib/utils';
 
 interface NavItem {
-  title: string;
+  translationKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: string[];
@@ -26,43 +27,43 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    title: 'Dashboard',
+    translationKey: 'navigation.dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
     roles: ['owner', 'admin', 'member'],
   },
   {
-    title: 'Team',
+    translationKey: 'navigation.team',
     href: '/team',
     icon: Users,
     roles: ['owner', 'admin'],
   },
   {
-    title: 'Billing',
+    translationKey: 'navigation.billing',
     href: '/billing',
     icon: CreditCard,
     roles: ['owner'],
   },
   {
-    title: 'Analytics',
+    translationKey: 'navigation.analytics',
     href: '/analytics',
     icon: BarChart3,
     roles: ['owner', 'admin'],
   },
   {
-    title: 'API Keys',
+    translationKey: 'navigation.apiKeys',
     href: '/api-keys',
     icon: Key,
     roles: ['owner', 'admin'],
   },
   {
-    title: 'Webhooks',
+    translationKey: 'navigation.webhooks',
     href: '/webhooks',
     icon: Webhook,
     roles: ['owner', 'admin'],
   },
   {
-    title: 'Profile',
+    translationKey: 'navigation.profile',
     href: '/profile',
     icon: User,
     roles: ['owner', 'admin', 'member'],
@@ -72,6 +73,7 @@ const navItems: NavItem[] = [
 export function TenantSidebar() {
   const { tenant, role } = useTenant();
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const filteredNavItems = navItems.filter(item => item.roles.includes(role));
 
@@ -95,7 +97,7 @@ export function TenantSidebar() {
                 )}
               >
                 <Icon className="h-4 w-4" />
-                {item.title}
+                {t(item.translationKey)}
               </Link>
             );
           })}

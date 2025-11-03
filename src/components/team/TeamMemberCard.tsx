@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { MoreHorizontal, UserMinus, Shield, ShieldCheck, Crown, Loader2 } from 'lucide-react';
 
+import { useTranslation } from '@/hooks/useTranslation';
 import { removeMemberAction, updateMemberRoleAction } from '@/actions/team-actions';
 import { TeamMember } from '@/actions/team-actions';
 import { canChangeRoles, canRemoveMembers } from '@/lib/permissions';
@@ -42,6 +43,7 @@ export function TeamMemberCard({
   currentUserId,
   organizationId
 }: TeamMemberCardProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [showRemoveDialog, setShowRemoveDialog] = useState(false);
 
@@ -70,13 +72,13 @@ export function TeamMemberCard({
       });
 
       if (result?.data?.success) {
-        toast.success(result.data.message);
+        toast.success(t('team.changeRoleDialog.success'));
       } else {
-        toast.error(result?.data?.message || 'Failed to update member role');
+        toast.error(result?.data?.message || t('team.changeRoleDialog.error'));
       }
     } catch (error) {
       console.error('Error updating member role:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to update member role');
+      toast.error(error instanceof Error ? error.message : t('team.changeRoleDialog.error'));
     } finally {
       setIsLoading(false);
     }
@@ -91,14 +93,14 @@ export function TeamMemberCard({
       });
 
       if (result?.data?.success) {
-        toast.success(result.data.message);
+        toast.success(t('team.removeDialog.success'));
         setShowRemoveDialog(false);
       } else {
-        toast.error(result?.data?.message || 'Failed to remove member');
+        toast.error(result?.data?.message || t('team.removeDialog.error'));
       }
     } catch (error) {
       console.error('Error removing member:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to remove member');
+      toast.error(error instanceof Error ? error.message : t('team.removeDialog.error'));
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +137,7 @@ export function TeamMemberCard({
             <p className="text-sm text-muted-foreground">{member.email}</p>
             <div className="flex gap-2 mt-1">
               <Badge variant={getRoleBadgeVariant(member.role)} className="text-xs">
-                {member.role}
+                {t(`roles.${member.role}` as any)}
               </Badge>
               <Badge variant="default" className="text-xs">
                 {member.status}
@@ -145,7 +147,7 @@ export function TeamMemberCard({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">
-            Joined {new Date(member.joinedAt).toLocaleDateString('en-US', {
+            {t('team.joinedAt')} {new Date(member.joinedAt).toLocaleDateString('en-US', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
@@ -167,7 +169,7 @@ export function TeamMemberCard({
                   <TransferOwnershipDialog member={member} organizationId={organizationId}>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                       <Crown className="mr-2 h-4 w-4" />
-                      Transfer Ownership
+                      {t('team.transferOwnership')}
                     </DropdownMenuItem>
                   </TransferOwnershipDialog>
                 )}
@@ -176,13 +178,13 @@ export function TeamMemberCard({
                     {member.role === 'member' && (
                       <DropdownMenuItem onClick={() => handleRoleChange('admin')}>
                         <Shield className="mr-2 h-4 w-4" />
-                        Promote to Admin
+                        {t('team.changeRoleDialog.changeButton')} {t('roles.admin')}
                       </DropdownMenuItem>
                     )}
                     {member.role === 'admin' && (
                       <DropdownMenuItem onClick={() => handleRoleChange('member')}>
                         <ShieldCheck className="mr-2 h-4 w-4" />
-                        Demote to Member
+                        {t('team.changeRoleDialog.demoteButton')} {t('roles.member')}
                       </DropdownMenuItem>
                     )}
                   </>
@@ -193,7 +195,7 @@ export function TeamMemberCard({
                     className="text-red-600"
                   >
                     <UserMinus className="mr-2 h-4 w-4" />
-                    Remove Member
+                    {t('team.removeMember')}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -205,21 +207,20 @@ export function TeamMemberCard({
       <AlertDialog open={showRemoveDialog} onOpenChange={setShowRemoveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove Team Member</AlertDialogTitle>
+            <AlertDialogTitle>{t('team.removeDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove <strong>{member.name}</strong> from the team? 
-              This action cannot be undone and they will lose access to the organization.
+              {t('team.removeDialog.description', { name: member.name })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isLoading}>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRemoveMember}
               disabled={isLoading}
               className="bg-red-600 hover:bg-red-700"
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Remove Member
+              {t('team.removeDialog.confirmButton')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
