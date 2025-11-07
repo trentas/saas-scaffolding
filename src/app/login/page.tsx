@@ -96,7 +96,7 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/setup" });
+    signIn("google", { callbackUrl: "/auth/post-login" });
   };
 
   const handleResendVerification = async () => {

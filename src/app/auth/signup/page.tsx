@@ -152,7 +152,9 @@ export default function SignUp() {
     setIsLoading(true);
     try {
       // Preserve invite token in callback URL
-      const callbackUrl = inviteToken ? `/accept-invite?token=${inviteToken}` : '/setup';
+      const callbackUrl = inviteToken
+        ? `/auth/post-login?invite=${encodeURIComponent(inviteToken)}`
+        : '/auth/post-login';
       await signIn('google', { callbackUrl });
     } catch {
       setError(t('auth.signup.error'));

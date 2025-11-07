@@ -172,11 +172,29 @@ export const authOptions = {
     },
     
     async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url;
-      return baseUrl;
+      try {
+        const postLoginPath = "/auth/post-login";
+
+        if (url.startsWith("/auth/signin")) {
+          return `${baseUrl}${postLoginPath}`;
+        }
+
+        if (url.startsWith("/")) {
+          return `${baseUrl}${url}`;
+        }
+
+        const parsedUrl = new URL(url);
+
+        if (parsedUrl.origin === baseUrl) {
+          return url;
+        }
+
+        return `${baseUrl}${postLoginPath}`;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Redirect callback error:", error);
+        return `${baseUrl}/auth/post-login`;
+      }
     },
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -194,7 +212,7 @@ export const authOptions = {
         // For OAuth providers (Google), create user if doesn't exist
         if (account?.provider === 'google') {
           debugAuth('Processing Google OAuth user', { email: user.email });
-          
+
           const { data: existingUser, error } = await supabaseAdmin
             .from('users')
             .select('*')
@@ -207,11 +225,13 @@ export const authOptions = {
             return false;
           }
 
+          let supabaseUser = existingUser;
+
           // If user doesn't exist, create them
-          if (!existingUser) {
+          if (!supabaseUser) {
             debugAuth('Creating new Google OAuth user', { email: user.email });
-            
-            const { error: createError } = await supabaseAdmin
+
+            const { data: createdUser, error: createError } = await supabaseAdmin
               .from('users')
               .insert({
                 email: user.email!,
@@ -227,6 +247,16 @@ export const authOptions = {
               console.error('Error creating user:', createError);
               return false;
             }
+
+            supabaseUser = createdUser;
+          }
+
+          if (supabaseUser) {
+            // Ensure we keep using the Supabase user ID so OAuth and credentials accounts merge
+            user.id = supabaseUser.id;
+            user.name = user.name || supabaseUser.name;
+            user.email = supabaseUser.email;
+            user.image = supabaseUser.avatar_url || user.image;
           }
         }
 
