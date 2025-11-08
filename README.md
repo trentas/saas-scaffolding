@@ -20,6 +20,7 @@ A production-ready multi-tenant SaaS scaffolding built with Next.js 15, Supabase
 - ✅ **Feature Flags** - Modular feature system for easy customization
 
 ### Modular Features (Configurable)
+- 🔧 **Audit Log** - Organization activity auditing and history (feature flag `auditLog`)
 - 🔧 **Analytics** - Usage tracking and analytics dashboard
 - 🔧 **Notifications** - Email and push notification system
 - 🔧 **API Keys** - API key management for integrations
@@ -111,6 +112,12 @@ DEBUG_AUTH=true
 DEBUG_EMAIL=true
 DEBUG_DATABASE=true
 DEBUG_API=true
+
+# Feature Flags (Optional)
+FEATURES__AUDIT_LOG=false
+FEATURES__STRIPE_SUPPORT=false
+NEXT_PUBLIC_FEATURES__AUDIT_LOG=false
+NEXT_PUBLIC_FEATURES__STRIPE_SUPPORT=false
 ```
 
 ### 3. Database Setup
@@ -140,7 +147,10 @@ DEBUG_API=true
    -- 6. Automatic domain allow-list configuration
    -- File: supabase/migrations/006_auto_accept_domain_setting.sql
 
-   -- 7. Row Level Security policies (must run after all migrations)
+   -- 7. Audit logs table and policies
+   -- File: supabase/migrations/007_audit_logs.sql
+
+   -- 8. Row Level Security policies (must run after all migrations)
    -- File: supabase/policies/rls_policies.sql
    ```
 
@@ -196,6 +206,14 @@ npm run dev
 ```
 
 Visit `http://localhost:3000` to see your application.
+
+### 7. Run the Test Suite (Optional but recommended)
+
+```bash
+npm test
+```
+
+> The repository ships with Vitest-based unit tests covering the feature flag helpers, audit logger, and audit log API route.
 
 ## Project Structure
 
