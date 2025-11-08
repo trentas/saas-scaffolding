@@ -134,11 +134,17 @@ DEBUG_API=true
    -- 4. Organization logo support
    -- File: supabase/migrations/004_add_logo_url.sql
    
-   -- 5. Row Level Security policies (must run after all migrations)
+   -- 5. Refresh token support
+   -- File: supabase/migrations/005_refresh_tokens.sql
+
+   -- 6. Automatic domain allow-list configuration
+   -- File: supabase/migrations/006_auto_accept_domain_setting.sql
+
+   -- 7. Row Level Security policies (must run after all migrations)
    -- File: supabase/policies/rls_policies.sql
    ```
 
-3. Verify that Row Level Security is enabled on all tables (this is automatically done by step 5 above, but you can verify in Supabase dashboard)
+3. Verify that Row Level Security is enabled on all tables (this is automatically done by step 7 above, but you can verify in Supabase dashboard)
 4. Set up authentication providers in Supabase dashboard
 
 #### Database Schema
@@ -152,9 +158,58 @@ The scaffolding includes these main tables:
 
 #### Supabase Storage Setup
 
-1. Create a storage bucket named `organization-logos` in Supabase Dashboard
-2. Set the bucket to public access
-3. Configure bucket policies for uploads (users can upload, public can read)
+1. Create two public storage buckets in Supabase Dashboard:
+   - `organization-logos`
+   - `user-avatars`
+2. For each bucket, enable **Public** access so assets can be served via CDN.
+3. Configure storage policies to allow authenticated uploads and public reads. Run the SQL below in the Supabase SQL editor (repeat for both buckets by adjusting the `bucket_id`):
+
+```sql
+-- Public read access
+create policy "Public read organization logos" on storage.objects
+  for select using (bucket_id = 'organization-logos');
+
+create policy "Public read user avatars" on storage.objects
+  for select using (bucket_id = 'user-avatars');
+
+-- Authenticated users can upload or replace files
+create policy "Authenticated upload organization logos" on storage.objects
+  for insert with check (
+    bucket_id = 'organization-logos' and auth.role() = 'authenticated'
+  );
+
+create policy "Authenticated upload user avatars" on storage.objects
+  for insert with check (
+    bucket_id = 'user-avatars' and auth.role() = 'authenticated'
+  );
+
+create policy "Authenticated update organization logos" on storage.objects
+  for update using (
+    bucket_id = 'organization-logos' and auth.role() = 'authenticated'
+  ) with check (
+    bucket_id = 'organization-logos'
+  );
+
+create policy "Authenticated update user avatars" on storage.objects
+  for update using (
+    bucket_id = 'user-avatars' and auth.role() = 'authenticated'
+  ) with check (
+    bucket_id = 'user-avatars'
+  );
+
+-- Authenticated users can delete existing files
+create policy "Authenticated delete organization logos" on storage.objects
+  for delete using (
+    bucket_id = 'organization-logos' and auth.role() = 'authenticated'
+  );
+
+create policy "Authenticated delete user avatars" on storage.objects
+  for delete using (
+    bucket_id = 'user-avatars' and auth.role() = 'authenticated'
+  );
+```
+
+> The application uses the Supabase service role for server-side uploads, which bypasses these policies. Creating them ensures dashboard access and any client-side tooling can still manage files securely.
 
 ### 4. Stripe Setup (Optional)
 
