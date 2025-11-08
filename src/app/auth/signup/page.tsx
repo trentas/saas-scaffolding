@@ -104,13 +104,14 @@ export default function SignUp() {
           if (signInResult?.ok) {
             // Accept the invitation
             const inviteResult = await acceptInvitationAction({ token: inviteToken });
+            const organizationSlug = inviteResult?.data?.organizationSlug;
             
             if (inviteResult?.data?.success) {
               setSuccess(t('auth.signup.success'));
               // Redirect to organization dashboard
               setTimeout(() => {
-                if (inviteResult.data.organizationSlug) {
-                  router.push(`/${inviteResult.data.organizationSlug}/dashboard`);
+                if (organizationSlug) {
+                  router.push(`/${organizationSlug}/dashboard`);
                 } else {
                   router.push('/dashboard');
                 }
