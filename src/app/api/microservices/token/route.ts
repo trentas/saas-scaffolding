@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getServerSession } from 'next-auth/next';
 
+import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions } from '@/lib/auth';
 import {
   generateAccessToken,
@@ -47,6 +48,18 @@ export async function POST() {
 
     // Generate refresh token
     const refreshToken = await generateRefreshToken(session.user.id);
+
+    await logAuditEvent({
+      organizationId,
+      actorId: session.user.id,
+      action: 'microservice.token.generated',
+      targetType: 'microservice_token',
+      metadata: {
+        tenantSlug: organizationSlug,
+        role,
+        permissions,
+      },
+    });
 
     return NextResponse.json({
       accessToken,

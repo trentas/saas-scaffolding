@@ -36,11 +36,23 @@ export const featuresConfig: Record<string, FeatureConfig> = {
     description: 'Usage tracking and analytics',
     dependencies: ['multiTenant'],
   },
+  auditLog: {
+    enabled: false,
+    name: 'Audit Log',
+    description: 'Organization activity auditing and history',
+    dependencies: ['auth', 'multiTenant', 'userManagement'],
+  },
   notifications: {
     enabled: false,
     name: 'Notifications',
     description: 'Email and push notifications',
     dependencies: ['auth'],
+  },
+  stripeSupport: {
+    enabled: false,
+    name: 'Stripe Support',
+    description: 'Stripe integration for billing and payments (placeholder)',
+    dependencies: ['auth', 'multiTenant', 'billing'],
   },
   apiKeys: {
     enabled: false,

@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 import { getServerSession } from "next-auth/next";
 
 import { actionClient } from "./safe-action";
 
+import { logAuditEvent } from "@/lib/audit-logger";
 import { authOptions } from "@/lib/auth";
 import { debugDatabase, logError } from "@/lib/debug";
 import { deleteOrganizationSchema } from "@/lib/form-schema";
@@ -93,6 +95,19 @@ export const deleteOrganizationAction = actionClient
       }
 
       debugDatabase('Organization deleted successfully', { organizationId, organizationName });
+
+      const requestHeaders = headers();
+      await logAuditEvent({
+        organizationId,
+        actorId: session.user.id,
+        action: 'organization.delete',
+        targetType: 'organization',
+        targetId: organizationId,
+        metadata: {
+          organizationName,
+        },
+        headers: requestHeaders,
+      });
 
       revalidatePath('/[tenant]/settings', 'page');
 

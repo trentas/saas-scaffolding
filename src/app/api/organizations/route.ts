@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getServerSession } from 'next-auth/next';
 
+import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions , createOrganization } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { isValidTenantSlug } from '@/lib/tenant-utils';
@@ -51,6 +52,19 @@ export async function POST(request: NextRequest) {
 
     // Create organization
     const organization = await createOrganization(session.user.id, name, slug);
+
+    await logAuditEvent({
+      organizationId: organization.id,
+      actorId: session.user.id,
+      action: 'organization.create',
+      targetType: 'organization',
+      targetId: organization.id,
+      metadata: {
+        name,
+        slug,
+      },
+      request,
+    });
 
     return NextResponse.json(organization, { status: 201 });
   } catch (error: unknown) {

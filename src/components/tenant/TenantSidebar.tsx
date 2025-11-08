@@ -11,11 +11,14 @@ import {
   Key,
   Webhook,
   User,
+  ScrollText,
 } from 'lucide-react';
 
 import { useTenant } from './TenantProvider';
 
 import { useTranslation } from '@/hooks/useTranslation';
+import type { FeatureKey } from '@/lib/features';
+import { useFeatureFlags } from '@/lib/features/client';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -23,6 +26,7 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: string[];
+  featureKey?: FeatureKey;
 }
 
 const navItems: NavItem[] = [
@@ -43,24 +47,35 @@ const navItems: NavItem[] = [
     href: '/billing',
     icon: CreditCard,
     roles: ['owner'],
+    featureKey: 'stripeSupport',
   },
   {
     translationKey: 'navigation.analytics',
     href: '/analytics',
     icon: BarChart3,
     roles: ['owner', 'admin'],
+    featureKey: 'analytics',
+  },
+  {
+    translationKey: 'navigation.auditLog',
+    href: '/audit-log',
+    icon: ScrollText,
+    roles: ['owner', 'admin'],
+    featureKey: 'auditLog',
   },
   {
     translationKey: 'navigation.apiKeys',
     href: '/api-keys',
     icon: Key,
     roles: ['owner', 'admin'],
+    featureKey: 'apiKeys',
   },
   {
     translationKey: 'navigation.webhooks',
     href: '/webhooks',
     icon: Webhook,
     roles: ['owner', 'admin'],
+    featureKey: 'webhooks',
   },
   {
     translationKey: 'navigation.profile',
@@ -74,8 +89,19 @@ export function TenantSidebar() {
   const { tenant, role } = useTenant();
   const pathname = usePathname();
   const { t } = useTranslation();
+  const featureFlags = useFeatureFlags();
 
-  const filteredNavItems = navItems.filter(item => item.roles.includes(role));
+  const filteredNavItems = navItems.filter((item) => {
+    if (!item.roles.includes(role)) {
+      return false;
+    }
+
+    if (!item.featureKey) {
+      return true;
+    }
+
+    return featureFlags[item.featureKey]?.enabled ?? false;
+  });
 
   return (
     <aside className="w-64 border-r bg-background flex flex-col">

@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 import { randomBytes } from "crypto";
 import { getServerSession } from "next-auth/next";
 
 import { actionClient } from "./safe-action";
 
+import { logAuditEvent } from "@/lib/audit-logger";
 import { authOptions } from "@/lib/auth";
 import { debugDatabase, logError } from "@/lib/debug";
 import { sendInvitationEmail, sendOwnershipTransferEmail } from "@/lib/email";
@@ -170,6 +172,21 @@ export const inviteMemberAction = actionClient
         organizationId
       });
 
+      const requestHeaders = headers();
+      await logAuditEvent({
+        organizationId,
+        actorId: session.user.id,
+        action: 'invitation.create',
+        targetType: 'invitation',
+        targetId: invitation.id,
+        metadata: {
+          email,
+          role,
+          expiresAt: invitation.expires_at,
+        },
+        headers: requestHeaders,
+      });
+
       revalidatePath('/[tenant]/team', 'page');
       
       return {
@@ -233,6 +250,19 @@ export const resendInvitationAction = actionClient
         email: invitation.email
       });
 
+      const requestHeaders = headers();
+      await logAuditEvent({
+        organizationId,
+        actorId: session.user.id,
+        action: 'invitation.resend',
+        targetType: 'invitation',
+        targetId: invitationId,
+        metadata: {
+          email: invitation.email,
+        },
+        headers: requestHeaders,
+      });
+
       return {
         success: true,
         message: 'Invitation resent successfully'
@@ -276,6 +306,16 @@ export const cancelInvitationAction = actionClient
       }
 
       debugDatabase('Invitation cancelled successfully', { invitationId });
+
+      const requestHeaders = headers();
+      await logAuditEvent({
+        organizationId,
+        actorId: session.user.id,
+        action: 'invitation.cancel',
+        targetType: 'invitation',
+        targetId: invitationId,
+        headers: requestHeaders,
+      });
 
       revalidatePath('/[tenant]/team', 'page');
       
@@ -353,6 +393,20 @@ export const removeMemberAction = actionClient
       }
 
       debugDatabase('Member removed successfully', { memberId, memberRole: member.role });
+
+      const requestHeaders = headers();
+      await logAuditEvent({
+        organizationId,
+        actorId: session.user.id,
+        action: 'member.remove',
+        targetType: 'member',
+        targetId: memberId,
+        metadata: {
+          removedUserId: member.user_id,
+          removedRole: member.role,
+        },
+        headers: requestHeaders,
+      });
 
       revalidatePath('/[tenant]/team', 'page');
       
@@ -468,6 +522,20 @@ export const transferOwnershipAction = actionClient
         }
       }
 
+      const requestHeaders = headers();
+      await logAuditEvent({
+        organizationId,
+        actorId: session.user.id,
+        action: 'organization.transferOwnership',
+        targetType: 'organization_member',
+        targetId: newOwnerMemberId,
+        metadata: {
+          previousOwnerId: session.user.id,
+          newOwnerId: newOwnerMember.user_id,
+        },
+        headers: requestHeaders,
+      });
+
       revalidatePath('/[tenant]/team', 'page');
       
       return {
@@ -547,6 +615,21 @@ export const updateMemberRoleAction = actionClient
         memberId, 
         oldRole: member.role, 
         newRole: role 
+      });
+
+      const requestHeaders = headers();
+      await logAuditEvent({
+        organizationId,
+        actorId: session.user.id,
+        action: 'member.role.update',
+        targetType: 'member',
+        targetId: memberId,
+        metadata: {
+          previousRole: member.role,
+          newRole: role,
+          updatedUserId: member.user_id,
+        },
+        headers: requestHeaders,
       });
 
       revalidatePath('/[tenant]/team', 'page');
@@ -840,6 +923,20 @@ export const acceptInvitationAction = actionClient
         userId: session.user.id,
         organizationId: invitation.organization_id,
         role: invitation.role
+      });
+
+      const requestHeaders = headers();
+      await logAuditEvent({
+        organizationId: invitation.organization_id,
+        actorId: session.user.id,
+        action: 'invitation.accept',
+        targetType: 'invitation',
+        targetId: invitation.id,
+        metadata: {
+          role: invitation.role,
+          invitedBy: invitation.invited_by,
+        },
+        headers: requestHeaders,
       });
 
       const organization = Array.isArray(invitation.organizations)

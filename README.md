@@ -209,6 +209,7 @@ Visit `http://localhost:3000` to see your application.
 │   │   ├── /profile (user profile & settings)
 │   │   ├── /team (team management)
 │   │   ├── /billing
+│   │   ├── /audit-log (organization audit trail, feature flagged)
 │   │   ├── /settings (organization settings)
 │   │   ├── /analytics (placeholder)
 │   │   ├── /api-keys (placeholder)
@@ -216,6 +217,7 @@ Visit `http://localhost:3000` to see your application.
 │   └── /api (API routes)
 │       ├── /auth (authentication endpoints)
 │       ├── /organizations (organization management)
+│       ├── /tenants/[tenant]/audit-logs (audit log listings, feature flagged)
 │       └── /webhooks (webhook handlers)
 ├── /components
 │   ├── /ui (shadcn components)
@@ -266,8 +268,25 @@ export const featuresConfig = {
     name: 'Analytics',
     description: 'Usage tracking and analytics',
   },
+  auditLog: {
+    enabled: false,
+    name: 'Audit Log',
+    description: 'Organization activity auditing and history',
+  },
+  stripeSupport: {
+    enabled: false,
+    name: 'Stripe Support',
+    description: 'Stripe integration for billing and payments',
+  },
   // ... other features
 };
+```
+
+Feature flags can be overridden per-environment without changing the codebase. Set `FEATURES__<FEATURE_NAME>=true|false` for server-only evaluation or `NEXT_PUBLIC_FEATURES__<FEATURE_NAME>=true|false` when client-side checks are required. For example, enable the audit log in production with:
+
+```bash
+FEATURES__AUDIT_LOG=true
+NEXT_PUBLIC_FEATURES__AUDIT_LOG=true
 ```
 
 ## Customization
@@ -393,6 +412,12 @@ For questions and support:
 - **Logo Display**: Logo appears in top-left corner of all tenant pages
 - **Organization Deletion**: Owner can delete organization (requires confirmation)
 - **Settings Access**: Only owners and admins can access organization settings
+
+### Audit Log (Feature Flag: `auditLog`)
+- **Visibility**: Accessible at `/[tenant]/audit-log` for organization owners and admins
+- **Contents**: Shows action, actor, target, metadata, IP address, and user agent for every mutating action in the organization
+- **Data Source**: Stored in the Supabase `audit_logs` table with RLS protections
+- **Enablement**: Toggle via `FEATURES__AUDIT_LOG=true` (and `NEXT_PUBLIC_FEATURES__AUDIT_LOG=true` if the UI should resolve it client-side)
 
 ### Team Management
 - **Member Invitations**: Send email invitations to join organization

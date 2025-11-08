@@ -9,6 +9,8 @@ import { SessionProvider } from "@/components/providers/SessionProvider";
 import { StyleGlideProvider } from "@/components/styleglide-provider";
 import { ThemeInitializer } from "@/components/theme-initializer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { FeatureFlagsProvider } from "@/lib/features/client";
+import { getServerFeatureFlags } from "@/lib/features/server";
 import "@/styles/globals.css";
 
 const dmSans = localFont({
@@ -133,6 +135,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const featureFlags = getServerFeatureFlags();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -143,20 +147,22 @@ export default function RootLayout({
         />
       </head>
       <body className={`${dmSans.variable} ${inter.variable} antialiased`}>
-        <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ThemeInitializer />
-            <StyleGlideProvider />
-            <ConditionalNavbar />
-            <main className="">{children}</main>
-            <Footer />
-          </ThemeProvider>
-        </SessionProvider>
+        <FeatureFlagsProvider initialFlags={featureFlags}>
+          <SessionProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <ThemeInitializer />
+              <StyleGlideProvider />
+              <ConditionalNavbar />
+              <main className="">{children}</main>
+              <Footer />
+            </ThemeProvider>
+          </SessionProvider>
+        </FeatureFlagsProvider>
       </body>
     </html>
   );

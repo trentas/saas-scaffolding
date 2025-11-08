@@ -1,12 +1,15 @@
 'use client';
 
-import { Wrench } from 'lucide-react';
+import { AlertCircle, Wrench } from 'lucide-react';
 
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useFeatureEnabled } from '@/lib/features/client';
 
 export default function BillingPage() {
   const { t } = useTranslation();
+  const stripeEnabled = useFeatureEnabled('stripeSupport');
 
   return (
     <div className="space-y-6">
@@ -19,6 +22,18 @@ export default function BillingPage() {
         </div>
       </div>
 
+      {!stripeEnabled ? (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>{t('billing.enableStripeTitle')}</AlertTitle>
+          <AlertDescription className="space-y-2">
+            <p>{t('billing.enableStripeDescription')}</p>
+            <p className="text-muted-foreground">
+              {t('billing.enableStripeHint')}
+            </p>
+          </AlertDescription>
+        </Alert>
+      ) : (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -35,6 +50,7 @@ export default function BillingPage() {
           </p>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }

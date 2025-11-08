@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { v4 as uuidv4 } from 'uuid';
 
+import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions } from '@/lib/auth';
 import { uploadImageToStorage, deleteFileFromStorage } from '@/lib/storage';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -97,6 +98,20 @@ export async function POST(
     if (currentOrg?.logo_url && currentOrg.logo_url.includes('/storage/v1/object/public/organization-logos/')) {
       await deleteFileFromStorage(bucket, currentOrg.logo_url);
     }
+
+    await logAuditEvent({
+      organizationId,
+      actorId: session.user.id,
+      action: 'organization.logo.update',
+      targetType: 'organization',
+      targetId: organizationId,
+      metadata: {
+        previousLogoUrl: currentOrg?.logo_url ?? null,
+        newLogoUrl: uploadResult.url,
+        fileName,
+      },
+      request,
+    });
 
     return NextResponse.json(
       { 

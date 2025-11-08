@@ -1,5 +1,15 @@
 // Feature modules export
-export { isFeatureEnabled, getEnabledFeatures } from '../config/features.config';
+export {
+  getEnabledFeatures,
+  isFeatureEnabled,
+  resolveFeatureFlags,
+} from '@/lib/features';
+
+export {
+  FeatureFlagsProvider,
+  useFeatureEnabled,
+  useFeatureFlags,
+} from '@/lib/features/client';
 
 // Conditional feature exports
 export * from './billing';

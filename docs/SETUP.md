@@ -168,9 +168,19 @@ export const featuresConfig = {
     enabled: false, // Disable analytics
     // ...
   },
+  auditLog: {
+    enabled: false,
+    // ...
+  },
+  stripeSupport: {
+    enabled: false,
+    // ...
+  },
   // ...
 };
 ```
+
+You can override feature flags per-environment by exporting variables such as `FEATURES__AUDIT_LOG=true` (server-only) or `NEXT_PUBLIC_FEATURES__AUDIT_LOG=true` (also exposes the flag to the client). This allows you to toggle modules without modifying the codebase.
 
 #### 2. Customize Features
 

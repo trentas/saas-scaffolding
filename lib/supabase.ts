@@ -206,6 +206,44 @@ export interface Database {
           updated_at?: string;
         };
       };
+      audit_logs: {
+        Row: {
+          id: string;
+          organization_id: string;
+          actor_id: string | null;
+          action: string;
+          target_type: string | null;
+          target_id: string | null;
+          metadata: Record<string, unknown>;
+          ip_address: string | null;
+          user_agent: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          actor_id?: string | null;
+          action: string;
+          target_type?: string | null;
+          target_id?: string | null;
+          metadata?: Record<string, unknown>;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          actor_id?: string | null;
+          action?: string;
+          target_type?: string | null;
+          target_id?: string | null;
+          metadata?: Record<string, unknown>;
+          ip_address?: string | null;
+          user_agent?: string | null;
+          created_at?: string;
+        };
+      };
     };
   };
 }
