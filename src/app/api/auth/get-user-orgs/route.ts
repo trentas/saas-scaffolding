@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { getServerSession } from 'next-auth/next';
 
-import { authOptions } from '@/lib/auth';
+import { authOptions, ensureAutoAcceptedDomainMembership } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabase';
 
 type OrganizationMemberRecord = {
@@ -26,6 +26,8 @@ export async function GET() {
         { status: 401 }
       );
     }
+
+    await ensureAutoAcceptedDomainMembership(session.user.id, session.user.email);
 
     console.log('[get-user-orgs] Fetching organizations for user:', session.user.id);
 

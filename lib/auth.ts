@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import { v4 as uuidv4 } from 'uuid';
 
 import { debugAuth, debugDatabase, logError, RequestTimer } from './debug';
+import { getEmailDomain, isPersonalEmailDomain } from './email-domain';
 import { supabaseAdmin } from './supabase';
 
 // For now, let's use JWT strategy instead of database sessions
@@ -301,6 +302,8 @@ export const authOptions = {
         });
         
         session.user.id = token.sub;
+
+        await ensureAutoAcceptedDomainMembership(token.sub, session.user.email);
         
         debugAuth('Session user ID set', { 
           sessionUserId: session.user.id,
@@ -375,6 +378,109 @@ export const authOptions = {
 };
 
 // Helper functions for authentication
+
+export async function ensureAutoAcceptedDomainMembership(
+  userId: string,
+  email: string | null | undefined
+) {
+  const domain = getEmailDomain(email);
+
+  if (!domain) {
+    debugAuth('Auto-accept domain skipped: missing domain', { userId, email });
+    return;
+  }
+
+  if (isPersonalEmailDomain(domain)) {
+    debugAuth('Auto-accept domain skipped: personal email domain', { userId, domain });
+    return;
+  }
+
+  try {
+    const timer = new RequestTimer('ensureAutoAcceptedDomainMembership');
+
+    const { data: enabledOrganizations, error: organizationsError } = await supabaseAdmin
+      .from('organizations')
+      .select('id')
+      .eq('settings->autoAcceptDomainMembers->>enabled', 'true')
+      .eq('settings->autoAcceptDomainMembers->>domain', domain);
+
+    timer.checkpoint('fetchOrganizations');
+
+    if (organizationsError) {
+      logError(organizationsError, 'ensureAutoAcceptedDomainMembership.fetchOrganizations');
+      return;
+    }
+
+    if (!enabledOrganizations || enabledOrganizations.length === 0) {
+      debugAuth('Auto-accept domain: no organizations matched domain', { userId, domain });
+      return;
+    }
+
+    const { data: existingMemberships, error: membershipsError } = await supabaseAdmin
+      .from('organization_members')
+      .select('organization_id')
+      .eq('user_id', userId);
+
+    timer.checkpoint('fetchMemberships');
+
+    if (membershipsError) {
+      logError(membershipsError, 'ensureAutoAcceptedDomainMembership.fetchMemberships');
+      return;
+    }
+
+    const existingOrgIds = new Set(
+      (existingMemberships || []).map(
+        (membership: { organization_id: string }) => membership.organization_id
+      )
+    );
+
+    const organizationsToJoin = (enabledOrganizations || []).filter(
+      (organization: { id: string | null }) =>
+        organization?.id && !existingOrgIds.has(organization.id)
+    );
+
+    if (organizationsToJoin.length === 0) {
+      debugAuth('Auto-accept domain: user already belongs to all matched organizations', {
+        userId,
+        domain,
+      });
+      return;
+    }
+
+    const insertPayload = organizationsToJoin.map((organization) => ({
+      user_id: userId,
+      organization_id: organization.id as string,
+      role: 'member',
+      status: 'active',
+    }));
+
+    const { error: insertError } = await supabaseAdmin
+      .from('organization_members')
+      .insert(insertPayload);
+
+    timer.end('insertMemberships');
+
+    if (insertError) {
+      if ((insertError as { code?: string }).code === '23505') {
+        debugAuth('Auto-accept domain: membership already exists (duplicate)', {
+          userId,
+          domain,
+        });
+      } else {
+        logError(insertError, 'ensureAutoAcceptedDomainMembership.insertMemberships');
+      }
+      return;
+    }
+
+    debugDatabase('Auto-accepted domain membership inserted', {
+      userId,
+      domain,
+      organizationsCount: organizationsToJoin.length,
+    });
+  } catch (error) {
+    logError(error, 'ensureAutoAcceptedDomainMembership');
+  }
+}
 
 export async function createUser(
   email: string, 
@@ -549,6 +655,12 @@ export async function createOrganization(userId: string, name: string, slug: str
         name,
         slug,
         plan: 'free',
+        settings: {
+          autoAcceptDomainMembers: {
+            enabled: false,
+            domain: null,
+          },
+        },
       })
       .select()
       .single();

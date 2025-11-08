@@ -126,6 +126,14 @@ export class RequestTimer {
     logger.trace(`[TIMER] Started: ${operation}`);
   }
 
+  checkpoint(label: string, data?: Record<string, unknown>): void {
+    const duration = performance.now() - this.startTime;
+    logger.performance(`[TIMER] Checkpoint: ${this.operation} - ${label}`, {
+      duration: `${duration.toFixed(2)}ms`,
+      ...data,
+    });
+  }
+
   end(data?: Record<string, unknown>): void {
     const duration = performance.now() - this.startTime;
     logger.performance(`[TIMER] Completed: ${this.operation}`, {

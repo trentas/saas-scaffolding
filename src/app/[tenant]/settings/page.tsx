@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { getServerSession } from 'next-auth/next';
 
+import { AutoAcceptDomainToggle } from '@/components/organization/AutoAcceptDomainToggle';
 import { DeleteOrganizationDialog } from '@/components/organization/DeleteOrganizationDialog';
 import { LogoUpload } from '@/components/organization/LogoUpload';
 import { RenameOrganization } from '@/components/organization/RenameOrganization';
@@ -23,7 +24,7 @@ async function getUserOrganizationContext(userId: string, tenant: string) {
   // Get organization by slug
   const { data: org, error: orgError } = await supabaseAdmin
     .from('organizations')
-    .select('id, name, slug, logo_url')
+    .select('id, name, slug, logo_url, settings')
     .eq('slug', tenant)
     .single();
 
@@ -48,6 +49,7 @@ async function getUserOrganizationContext(userId: string, tenant: string) {
     organizationName: org.name,
     organizationSlug: org.slug,
     logoUrl: org.logo_url,
+    settings: org.settings || {},
     userRole: membership.role as 'owner' | 'admin' | 'member',
     userStatus: membership.status
   };
@@ -65,7 +67,7 @@ export default async function OrganizationSettingsPage({ params }: SettingsPageP
   const { tenant } = await params;
 
   // Get user's organization context
-  const { userRole, organizationId, organizationName, organizationSlug, logoUrl } = await getUserOrganizationContext(session.user.id, tenant);
+  const { userRole, organizationId, organizationName, organizationSlug, logoUrl, settings } = await getUserOrganizationContext(session.user.id, tenant);
   
   // Check permissions - only owners and admins can access settings
   if (!canManageMembers(userRole)) {
@@ -73,6 +75,10 @@ export default async function OrganizationSettingsPage({ params }: SettingsPageP
   }
 
   const isOwner = userRole === 'owner';
+  const autoAcceptDomainSettings = (settings?.autoAcceptDomainMembers as { enabled?: boolean; domain?: string | null } | undefined) ?? {
+    enabled: false,
+    domain: null,
+  };
 
   return (
     <div className="space-y-6">
@@ -96,6 +102,12 @@ export default async function OrganizationSettingsPage({ params }: SettingsPageP
         organizationId={organizationId}
         currentLogoUrl={logoUrl}
         organizationName={organizationName}
+      />
+
+      <AutoAcceptDomainToggle
+        organizationId={organizationId}
+        initialEnabled={!!autoAcceptDomainSettings.enabled}
+        initialDomain={autoAcceptDomainSettings.domain ?? null}
       />
 
       {/* Danger Zone */}

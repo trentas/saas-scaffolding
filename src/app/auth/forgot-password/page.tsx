@@ -93,12 +93,14 @@ export default function ForgotPassword() {
                     </Button>
                   </div>
                 )}
-                
-                <div className="text-center mt-4">
-                  <Link href="/auth/signin" className="text-sm text-muted-foreground hover:text-primary">
-                    {t('auth.forgotPassword.backToSignIn')}
-                  </Link>
-                </div>
+
+                {!isSuccess && (
+                  <div className="text-center mt-4">
+                    <Link href="/auth/signin" className="text-sm text-muted-foreground hover:text-primary">
+                      {t('auth.forgotPassword.backToSignIn')}
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
