@@ -162,54 +162,9 @@ The scaffolding includes these main tables:
    - `organization-logos`
    - `user-avatars`
 2. For each bucket, enable **Public** access so assets can be served via CDN.
-3. Configure storage policies to allow authenticated uploads and public reads. Run the SQL below in the Supabase SQL editor (repeat for both buckets by adjusting the `bucket_id`):
+3. Configure storage policies to allow authenticated uploads and public reads by running the script in `supabase/storage/storage_policies.sql` inside the Supabase SQL editor (it covers both buckets).
 
-```sql
--- Public read access
-create policy "Public read organization logos" on storage.objects
-  for select using (bucket_id = 'organization-logos');
-
-create policy "Public read user avatars" on storage.objects
-  for select using (bucket_id = 'user-avatars');
-
--- Authenticated users can upload or replace files
-create policy "Authenticated upload organization logos" on storage.objects
-  for insert with check (
-    bucket_id = 'organization-logos' and auth.role() = 'authenticated'
-  );
-
-create policy "Authenticated upload user avatars" on storage.objects
-  for insert with check (
-    bucket_id = 'user-avatars' and auth.role() = 'authenticated'
-  );
-
-create policy "Authenticated update organization logos" on storage.objects
-  for update using (
-    bucket_id = 'organization-logos' and auth.role() = 'authenticated'
-  ) with check (
-    bucket_id = 'organization-logos'
-  );
-
-create policy "Authenticated update user avatars" on storage.objects
-  for update using (
-    bucket_id = 'user-avatars' and auth.role() = 'authenticated'
-  ) with check (
-    bucket_id = 'user-avatars'
-  );
-
--- Authenticated users can delete existing files
-create policy "Authenticated delete organization logos" on storage.objects
-  for delete using (
-    bucket_id = 'organization-logos' and auth.role() = 'authenticated'
-  );
-
-create policy "Authenticated delete user avatars" on storage.objects
-  for delete using (
-    bucket_id = 'user-avatars' and auth.role() = 'authenticated'
-  );
-```
-
-> The application uses the Supabase service role for server-side uploads, which bypasses these policies. Creating them ensures dashboard access and any client-side tooling can still manage files securely.
+> A aplicação utiliza a service role do Supabase para uploads no backend, o que ignora essas policies. Mesmo assim, aplicar o script garante que interações via dashboard ou ferramentas client-side sigam regras seguras.
 
 ### 4. Stripe Setup (Optional)
 
