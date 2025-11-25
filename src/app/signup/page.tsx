@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 import { FcGoogle } from "react-icons/fc";
 
@@ -20,7 +21,21 @@ const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [googleEnabled, setGoogleEnabled] = useState(false);
   const router = useRouter();
+
+  // Check available auth providers
+  useEffect(() => {
+    fetch('/api/auth/providers')
+      .then((res) => res.json())
+      .then((data) => {
+        setGoogleEnabled(data.providers?.google || false);
+      })
+      .catch(() => {
+        // Silently fail - Google button won't show
+        setGoogleEnabled(false);
+      });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,8 +71,7 @@ const Signup = () => {
   };
 
   const handleGoogleSignUp = () => {
-    // Google signup logic would go here
-    // TODO: Implement Google OAuth signup
+    signIn("google", { callbackUrl: "/setup" });
   };
   return (
     <Background>
@@ -119,7 +133,7 @@ const Signup = () => {
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Create an account"}
                   </Button>
-                  {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                  {googleEnabled && (
                     <Button 
                       type="button" 
                       variant="outline" 

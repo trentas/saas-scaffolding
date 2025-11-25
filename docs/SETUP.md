@@ -145,10 +145,13 @@ The system includes:
 #### 2. OAuth Configuration
 
 1. Set application type to "Web application"
-2. Add authorized redirect URIs:
+2. Add **Authorized JavaScript origins**:
+   - `http://localhost:3000` (development)
+   - `https://yourdomain.com` (production)
+3. Add **Authorized redirect URIs**:
    - `http://localhost:3000/api/auth/callback/google` (development)
    - `https://yourdomain.com/api/auth/callback/google` (production)
-3. Copy the client ID and client secret
+4. Copy the client ID and client secret
 
 **Note**: Google OAuth is optional. If you don't configure it, the Google sign-in buttons will not appear.
 

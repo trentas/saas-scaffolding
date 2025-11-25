@@ -29,9 +29,23 @@ function SignUpContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [googleEnabled, setGoogleEnabled] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('invite');
+
+  // Check available auth providers
+  useEffect(() => {
+    fetch('/api/auth/providers')
+      .then((res) => res.json())
+      .then((data) => {
+        setGoogleEnabled(data.providers?.google || false);
+      })
+      .catch(() => {
+        // Silently fail - Google button won't show
+        setGoogleEnabled(false);
+      });
+  }, []);
 
   // Pre-fill email if coming from invitation
   useEffect(() => {
@@ -151,15 +165,16 @@ function SignUpContent() {
 
   const handleGoogleSignUp = async () => {
     setIsLoading(true);
+    setError('');
     try {
       // Preserve invite token in callback URL
       const callbackUrl = inviteToken
         ? `/auth/post-login?invite=${encodeURIComponent(inviteToken)}`
         : '/auth/post-login';
       await signIn('google', { callbackUrl });
-    } catch {
+    } catch (error) {
+      console.error('Google sign up exception:', error);
       setError(t('auth.signup.error'));
-    } finally {
       setIsLoading(false);
     }
   };
@@ -246,7 +261,7 @@ function SignUpContent() {
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
                     {isLoading ? t('auth.signup.signingUp') : t('auth.signup.signUpButton')}
                   </Button>
-                  {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                  {googleEnabled && (
                     <Button
                       type="button"
                       variant="outline"

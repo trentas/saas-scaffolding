@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -25,7 +25,21 @@ const Login = () => {
   const [error, setError] = useState("");
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
+  const [googleEnabled, setGoogleEnabled] = useState(false);
   const router = useRouter();
+
+  // Check available auth providers
+  useEffect(() => {
+    fetch('/api/auth/providers')
+      .then((res) => res.json())
+      .then((data) => {
+        setGoogleEnabled(data.providers?.google || false);
+      })
+      .catch(() => {
+        // Silently fail - Google button won't show
+        setGoogleEnabled(false);
+      });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,7 +228,7 @@ const Login = () => {
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
                     {isLoading ? t('auth.signin.signingIn') : t('auth.signin.signInButton')}
                   </Button>
-                  {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                  {googleEnabled && (
                     <Button
                       type="button"
                       variant="outline"

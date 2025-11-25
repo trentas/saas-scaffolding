@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -24,9 +24,65 @@ function SignInContent() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [googleEnabled, setGoogleEnabled] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('invite');
+
+  // Check available auth providers
+  useEffect(() => {
+    fetch('/api/auth/providers')
+      .then((res) => res.json())
+      .then((data) => {
+        setGoogleEnabled(data.providers?.google || false);
+      })
+      .catch(() => {
+        // Silently fail - Google button won't show
+        setGoogleEnabled(false);
+      });
+
+    // Check for OAuth errors in URL
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'google' || errorParam === 'OAuthSignin') {
+      // Fetch debug info to show helpful error message
+      fetch('/api/auth/debug')
+        .then((res) => res.json())
+        .then((debugInfo) => {
+          const { googleOAuth, nextAuth } = debugInfo;
+          const baseUrl = nextAuth.url.replace('/api/auth/callback/google', '').replace('NOT SET', 'http://localhost:3000');
+          let errorMsg = 'Google authentication failed.\n\n';
+          
+          if (!googleOAuth.configured) {
+            errorMsg += '❌ Google OAuth is not configured:\n';
+            if (!googleOAuth.hasClientId) errorMsg += '  - GOOGLE_CLIENT_ID is missing\n';
+            if (!googleOAuth.hasClientSecret) errorMsg += '  - GOOGLE_CLIENT_SECRET is missing\n';
+          } else {
+            errorMsg += '✅ Google OAuth is configured\n';
+          }
+          
+          errorMsg += '\n📋 Please verify in Google Cloud Console:\n\n';
+          errorMsg += '1. Go to: APIs & Services → Credentials → Your OAuth 2.0 Client ID\n\n';
+          errorMsg += '2. Under "Authorized JavaScript origins", add:\n';
+          errorMsg += `   → ${baseUrl}\n`;
+          errorMsg += '   ⚠️ IMPORTANT: No trailing slash, no path, just the origin!\n\n';
+          errorMsg += '3. Under "Authorized redirect URIs", add:\n';
+          errorMsg += `   → ${nextAuth.expectedCallbackUrl}\n\n`;
+          errorMsg += '4. Application type must be: "Web application"\n\n';
+          errorMsg += '5. Click "SAVE" at the bottom of the page\n\n';
+          errorMsg += '6. Wait 2-5 minutes for Google to propagate changes\n\n';
+          errorMsg += '7. Check server logs (terminal) for detailed error messages\n\n';
+          errorMsg += '💡 Common issues:\n';
+          errorMsg += '   - JavaScript origins must be exact origin (no trailing slash)\n';
+          errorMsg += '   - Redirect URI must match exactly (case-sensitive)\n';
+          errorMsg += '   - Changes may take a few minutes to take effect';
+          
+          setError(errorMsg);
+        })
+        .catch(() => {
+          setError('Google authentication failed. Please check your configuration and server logs.');
+        });
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,16 +160,22 @@ function SignInContent() {
   };
 
   const handleGoogleSignIn = async () => {
+    if (!googleEnabled) {
+      setError('Google authentication is not available. Please check your configuration.');
+      return;
+    }
+
     setIsLoading(true);
+    setError('');
     try {
       // Preserve invite token in callback URL
       const callbackUrl = inviteToken
         ? `/auth/post-login?invite=${encodeURIComponent(inviteToken)}`
         : '/auth/post-login';
       await signIn('google', { callbackUrl });
-    } catch {
+    } catch (error) {
+      console.error('Google sign in exception:', error);
       setError(t('auth.signin.googleError'));
-    } finally {
       setIsLoading(false);
     }
   };
@@ -213,7 +275,7 @@ function SignInContent() {
                   <Button type="submit" className="mt-2 w-full" disabled={isLoading}>
                     {isLoading ? t('auth.signin.signingIn') : t('auth.signin.signInButton')}
                   </Button>
-                  {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                  {googleEnabled && (
                     <Button
                       type="button"
                       variant="outline"
