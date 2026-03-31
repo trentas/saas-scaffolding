@@ -156,7 +156,7 @@ export const deleteAccountSchema = z.object({
   password: z.string().min(1, "Password is required"),
 })
 
-export type DeleteAccountData = z.infer<typeof deleteAccountSchema>
+export type DeleteAccountData = z.input<typeof deleteAccountSchema>
 
 // Organization schemas
 export const uploadLogoSchema = z.object({

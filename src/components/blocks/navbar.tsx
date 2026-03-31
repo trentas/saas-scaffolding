@@ -6,7 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ChevronRight, Github } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { FaGithub } from "react-icons/fa6";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -129,7 +130,7 @@ export const Navbar = () => {
             href="https://github.com/shadcnblocks/mainline-nextjs-template"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            <Github className="size-4" />
+            <FaGithub className="size-4" />
             <span className="sr-only">GitHub</span>
           </a>
 

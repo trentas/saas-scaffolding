@@ -2,9 +2,22 @@ import Stripe from 'stripe';
 
 import { supabaseAdmin } from './supabase';
 
-// Initialize Stripe
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+// Initialize Stripe (lazy to avoid build-time errors when env var is not set)
+function getStripeClient() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('STRIPE_SECRET_KEY is not set');
+  }
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2026-03-25.dahlia',
+  });
+}
+
+let _stripe: Stripe | null = null;
+export const stripe = new Proxy({} as Stripe, {
+  get(_, prop) {
+    if (!_stripe) _stripe = getStripeClient();
+    return (_stripe as unknown as Record<string | symbol, unknown>)[prop];
+  },
 });
 
 // Stripe configuration
@@ -76,6 +89,7 @@ export async function createSubscription(
     });
 
     // Store subscription in database
+    const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
     await supabaseAdmin
       .from('subscriptions')
       .insert({
@@ -83,7 +97,9 @@ export async function createSubscription(
         stripe_subscription_id: subscription.id,
         status: subscription.status,
         plan: 'pro', // Determine plan from priceId
-        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        current_period_end: currentPeriodEnd
+          ? new Date(currentPeriodEnd * 1000).toISOString()
+          : new Date().toISOString(),
       });
 
     return subscription;
@@ -204,13 +220,16 @@ export async function handleStripeWebhook(event: Stripe.Event) {
 // Handle subscription changes
 async function handleSubscriptionChange(subscription: Stripe.Subscription) {
   try {
+    const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
     await supabaseAdmin
       .from('subscriptions')
       .upsert({
         stripe_subscription_id: subscription.id,
         status: subscription.status,
         plan: 'pro', // Determine plan from subscription
-        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        current_period_end: currentPeriodEnd
+          ? new Date(currentPeriodEnd * 1000).toISOString()
+          : new Date().toISOString(),
       });
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -235,16 +254,24 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 }
 
+// Extract subscription ID from invoice parent
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const sub = invoice.parent?.subscription_details?.subscription;
+  if (!sub) return null;
+  return typeof sub === 'string' ? sub : sub.id;
+}
+
 // Handle successful payment
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   try {
-    if (invoice.subscription) {
+    const subscriptionId = getInvoiceSubscriptionId(invoice);
+    if (subscriptionId) {
       await supabaseAdmin
         .from('subscriptions')
         .update({
           status: 'active',
         })
-        .eq('stripe_subscription_id', invoice.subscription as string);
+        .eq('stripe_subscription_id', subscriptionId);
     }
   } catch (error) {
     // eslint-disable-next-line no-console
@@ -256,13 +283,14 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
 // Handle failed payment
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
   try {
-    if (invoice.subscription) {
+    const subscriptionId = getInvoiceSubscriptionId(invoice);
+    if (subscriptionId) {
       await supabaseAdmin
         .from('subscriptions')
         .update({
           status: 'past_due',
         })
-        .eq('stripe_subscription_id', invoice.subscription as string);
+        .eq('stripe_subscription_id', subscriptionId);
     }
   } catch (error) {
     // eslint-disable-next-line no-console
