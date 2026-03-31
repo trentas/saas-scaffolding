@@ -497,19 +497,18 @@ export const authOptions = {
   },
 
   logger: {
-    error(code: string, metadata: Record<string, unknown>) {
+    error(code: string, metadata: Error | { error: Error; [key: string]: unknown }) {
       logger.error('NextAuth logger error', {
         code,
-        metadata,
+        error: metadata instanceof Error ? metadata.message : metadata.error?.message,
       });
     },
-    warn(code: string, metadata: Record<string, unknown>) {
+    warn(code: string) {
       logger.warn('NextAuth logger warn', {
         code,
-        metadata,
       });
     },
-    debug(code: string, metadata: Record<string, unknown>) {
+    debug(code: string, metadata: unknown) {
       logger.debug('NextAuth logger debug', {
         code,
         metadata,
@@ -609,7 +608,7 @@ export async function ensureAutoAcceptedDomainMembership(
       .from('organization_members')
       .insert(insertPayload);
 
-    timer.end('insertMemberships');
+    timer.end({ step: 'insertMemberships' });
 
     if (insertError) {
       if ((insertError as { code?: string }).code === '23505') {

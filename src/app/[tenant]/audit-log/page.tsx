@@ -41,7 +41,7 @@ export default async function AuditLogPage({
   }
 
   const { tenant } = await params;
-  const { t, locale } = await getServerTranslation();
+  const { t, language: locale } = await getServerTranslation();
 
   const organizationContext = await getUserOrganizationContext(
     session.user.id,

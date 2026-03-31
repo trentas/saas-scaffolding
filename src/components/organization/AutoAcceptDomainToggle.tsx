@@ -70,7 +70,7 @@ export function AutoAcceptDomainToggle({
 
       toast.success(
         updatedEnabled
-          ? t('settings.autoAcceptDomain.enabledToast', { domain: updatedDomain })
+          ? t('settings.autoAcceptDomain.enabledToast', { domain: updatedDomain ?? '' })
           : t('settings.autoAcceptDomain.disabledToast')
       );
     } catch (error) {

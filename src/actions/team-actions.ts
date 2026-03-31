@@ -172,7 +172,7 @@ export const inviteMemberAction = actionClient
         organizationId
       });
 
-      const requestHeaders = headers();
+      const requestHeaders = await headers();
       await logAuditEvent({
         organizationId,
         actorId: session.user.id,
@@ -250,7 +250,7 @@ export const resendInvitationAction = actionClient
         email: invitation.email
       });
 
-      const requestHeaders = headers();
+      const requestHeaders = await headers();
       await logAuditEvent({
         organizationId,
         actorId: session.user.id,
@@ -307,7 +307,7 @@ export const cancelInvitationAction = actionClient
 
       debugDatabase('Invitation cancelled successfully', { invitationId });
 
-      const requestHeaders = headers();
+      const requestHeaders = await headers();
       await logAuditEvent({
         organizationId,
         actorId: session.user.id,
@@ -394,7 +394,7 @@ export const removeMemberAction = actionClient
 
       debugDatabase('Member removed successfully', { memberId, memberRole: member.role });
 
-      const requestHeaders = headers();
+      const requestHeaders = await headers();
       await logAuditEvent({
         organizationId,
         actorId: session.user.id,
@@ -522,7 +522,7 @@ export const transferOwnershipAction = actionClient
         }
       }
 
-      const requestHeaders = headers();
+      const requestHeaders = await headers();
       await logAuditEvent({
         organizationId,
         actorId: session.user.id,
@@ -617,7 +617,7 @@ export const updateMemberRoleAction = actionClient
         newRole: role 
       });
 
-      const requestHeaders = headers();
+      const requestHeaders = await headers();
       await logAuditEvent({
         organizationId,
         actorId: session.user.id,
@@ -925,7 +925,7 @@ export const acceptInvitationAction = actionClient
         role: invitation.role
       });
 
-      const requestHeaders = headers();
+      const requestHeaders = await headers();
       await logAuditEvent({
         organizationId: invitation.organization_id,
         actorId: session.user.id,

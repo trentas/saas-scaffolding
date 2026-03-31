@@ -96,7 +96,7 @@ export const deleteOrganizationAction = actionClient
 
       debugDatabase('Organization deleted successfully', { organizationId, organizationName });
 
-      const requestHeaders = headers();
+      const requestHeaders = await headers();
       await logAuditEvent({
         organizationId,
         actorId: session.user.id,

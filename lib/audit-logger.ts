@@ -35,7 +35,6 @@ function extractRequestContext(
   const forwardedFor = headerBag?.get('x-forwarded-for');
   const remoteAddress =
     forwardedFor?.split(',')[0]?.trim() ??
-    request?.ip ??
     headerBag?.get('x-real-ip') ??
     null;
   const userAgent = headerBag?.get('user-agent');

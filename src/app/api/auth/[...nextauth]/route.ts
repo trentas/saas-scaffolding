@@ -7,7 +7,7 @@ import { debugAuth, logger } from '@/lib/debug';
 const handler = NextAuth(authOptions);
 
 // Wrap handlers to add logging
-async function wrappedHandler(req: NextRequest, context: { params: { nextauth: string[] } }) {
+async function wrappedHandler(req: NextRequest, context: { params: Promise<{ nextauth: string[] }> }) {
   const pathname = req.nextUrl.pathname;
   const searchParams = req.nextUrl.searchParams;
   
