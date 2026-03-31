@@ -226,7 +226,7 @@ export const authOptions = {
       }
     },
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     async jwt({ token, user, account }: { token: any; user: any; account: any }) {
       try {
         debugAuth('JWT callback called', { 
@@ -381,7 +381,7 @@ export const authOptions = {
       }
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     async session({ session, token }: { session: any; token: any }) {
       debugAuth('Session callback called', { 
         hasSession: !!session, 
@@ -422,7 +422,7 @@ export const authOptions = {
           .eq('user_id', token.sub)
           .eq('status', 'active');
 
-        session.user.organizations = organizations?.map((member: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+        session.user.organizations = organizations?.map((member: any) => ({  
           id: member.organizations.id,
           name: member.organizations.name,
           slug: member.organizations.slug,

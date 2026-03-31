@@ -40,7 +40,7 @@ export function useTranslation() {
     
     return (path: string, params?: Record<string, string | number>): string => {
       const keys = path.split('.');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       let value: any = translations_data;
       
       for (const key of keys) {

@@ -655,7 +655,7 @@ export const getTeamMembersAction = actionClient
       }
 
       // Get user's first organization from session
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const organizations = (session.user as any)?.organizations || [];
       if (organizations.length === 0) {
         throw new Error('No organizations found');
@@ -752,7 +752,7 @@ export const getPendingInvitationsAction = actionClient
       }
 
       // Get user's first organization from session
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const organizations = (session.user as any)?.organizations || [];
       if (organizations.length === 0) {
         throw new Error('No organizations found');

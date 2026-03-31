@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { translations, type Language } from '@/lib/translations';
 
@@ -9,25 +9,13 @@ import { translations, type Language } from '@/lib/translations';
  * Used for auth pages where user is not logged in
  */
 export function useBrowserTranslation() {
-  const [browserLanguage, setBrowserLanguage] = useState<Language>('en-US');
-
-  useEffect(() => {
-    // Detect browser language on client-side only
-    if (typeof window !== 'undefined') {
-      const nav = navigator as Navigator & { userLanguage?: string | undefined };
-      const detectedLang = nav.language || nav.userLanguage || 'en-US';
-      
-      // Map browser language to our supported languages
-      let lang: Language = 'en-US';
-      if (detectedLang.startsWith('pt')) {
-        lang = 'pt-BR';
-      } else if (detectedLang.startsWith('en')) {
-        lang = 'en-US';
-      }
-      
-      setBrowserLanguage(lang);
-    }
-  }, []);
+  const [browserLanguage] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'en-US';
+    const nav = navigator as Navigator & { userLanguage?: string | undefined };
+    const detectedLang = nav.language || nav.userLanguage || 'en-US';
+    if (detectedLang.startsWith('pt')) return 'pt-BR';
+    return 'en-US';
+  });
 
   const t = useMemo(() => {
     const translationsData = translations[browserLanguage];
