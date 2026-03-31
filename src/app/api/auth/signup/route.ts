@@ -6,8 +6,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { createUser } from '@/lib/auth';
 import { debugApi, logError, RequestTimer } from '@/lib/debug';
 import { sendVerificationEmail } from '@/lib/email';
+import { authRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const limited = authRateLimit(request);
+  if (limited) return limited;
+
   const timer = new RequestTimer('POST /api/auth/signup');
   let email = '';
   

@@ -6,6 +6,7 @@ import { fetchAuditLogsForOrganization } from '@/lib/audit-log-service';
 import { authOptions } from '@/lib/auth';
 import { isServerFeatureEnabled } from '@/lib/features/server';
 import { getUserOrganizationContext } from '@/lib/microservice-auth';
+import { apiRateLimit } from '@/lib/rate-limit';
 
 const OWNER_ROLES = new Set(['owner', 'admin']);
 
@@ -13,6 +14,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ tenant: string }> },
 ) {
+  const limited = apiRateLimit(request);
+  if (limited) return limited;
+
   if (!isServerFeatureEnabled('auditLog')) {
     return NextResponse.json({ message: 'Not found' }, { status: 404 });
   }

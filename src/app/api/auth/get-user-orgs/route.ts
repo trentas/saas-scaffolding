@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { getServerSession } from 'next-auth/next';
 
 import { authOptions, ensureAutoAcceptedDomainMembership } from '@/lib/auth';
+import { apiRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
 
 type OrganizationMemberRecord = {
@@ -16,7 +17,10 @@ type OrganizationMemberRecord = {
   };
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const limited = apiRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
     

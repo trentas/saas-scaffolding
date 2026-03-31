@@ -3,10 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { logError } from '@/lib/debug';
+import { authRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyTOTPCode, verify2FACode, verifyBackupCode } from '@/lib/two-factor';
 
 export async function POST(request: NextRequest) {
+  const limited = authRateLimit(request);
+  if (limited) return limited;
+
   try {
     const { userId, code, method } = await request.json();
 

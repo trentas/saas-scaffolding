@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { verifyEmailToken } from '@/lib/auth';
+import { strictAuthRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const limited = strictAuthRateLimit(request);
+  if (limited) return limited;
+
   try {
     const { token } = await request.json();
 

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 import { getServerSession } from 'next-auth/next';
 
@@ -9,9 +9,13 @@ import {
   generateRefreshToken,
   getUserOrganizationContext,
 } from '@/lib/microservice-auth';
+import { apiRateLimit } from '@/lib/rate-limit';
 import { getTenantFromRequest } from '@/lib/tenant';
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  const limited = apiRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
 

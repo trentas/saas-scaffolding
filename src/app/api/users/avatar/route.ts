@@ -4,13 +4,17 @@ import { getServerSession } from 'next-auth/next';
 import { v4 as uuidv4 } from 'uuid';
 
 import { authOptions } from '@/lib/auth';
+import { uploadRateLimit } from '@/lib/rate-limit';
 import { uploadImageToStorage, deleteFileFromStorage } from '@/lib/storage';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
+  const limited = uploadRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
       return NextResponse.json(
         { message: 'Unauthorized' },
@@ -87,7 +91,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
+  const limited = uploadRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
     

@@ -4,8 +4,12 @@ import { getServerSession } from 'next-auth/next';
 
 import { authOptions } from '@/lib/auth';
 import { revokeRefreshToken, revokeAllUserTokens } from '@/lib/microservice-auth';
+import { apiRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  const limited = apiRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
 

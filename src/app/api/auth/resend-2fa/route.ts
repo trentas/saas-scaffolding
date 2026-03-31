@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { logError } from '@/lib/debug';
 import { send2FACodeEmail } from '@/lib/email';
+import { strictAuthRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
 import { generate2FACode, store2FACode } from '@/lib/two-factor';
 
 export async function POST(request: NextRequest) {
+  const limited = strictAuthRateLimit(request);
+  if (limited) return limited;
+
   try {
     const { userId } = await request.json();
 

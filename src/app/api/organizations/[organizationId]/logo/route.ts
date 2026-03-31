@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions } from '@/lib/auth';
+import { uploadRateLimit } from '@/lib/rate-limit';
 import { uploadImageToStorage, deleteFileFromStorage } from '@/lib/storage';
 import { supabaseAdmin } from '@/lib/supabase';
 
@@ -12,6 +13,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ organizationId: string }> }
 ) {
+  const limited = uploadRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
     

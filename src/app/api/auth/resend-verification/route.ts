@@ -3,9 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
 import { sendVerificationEmail } from '@/lib/email';
+import { strictAuthRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
+  const limited = strictAuthRateLimit(request);
+  if (limited) return limited;
+
   try {
     const { email } = await request.json();
 

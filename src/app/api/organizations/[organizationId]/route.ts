@@ -5,12 +5,16 @@ import { getServerSession } from 'next-auth/next';
 import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions } from '@/lib/auth';
 import { canManageMembers } from '@/lib/permissions';
+import { apiRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ organizationId: string }> }
 ) {
+  const limited = apiRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
     

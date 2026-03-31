@@ -4,10 +4,14 @@ import { getServerSession } from 'next-auth/next';
 
 import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions , createOrganization } from '@/lib/auth';
+import { apiRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
 import { isValidTenantSlug } from '@/lib/tenant-utils';
 
 export async function POST(request: NextRequest) {
+  const limited = apiRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
     
@@ -86,7 +90,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const limited = apiRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
     

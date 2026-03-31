@@ -3,9 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 
 import { authOptions } from '@/lib/auth';
+import { authRateLimit } from '@/lib/rate-limit';
 import { verify2FACode } from '@/lib/two-factor';
 
 export async function POST(request: NextRequest) {
+  const limited = authRateLimit(request);
+  if (limited) return limited;
+
   try {
     const session = await getServerSession(authOptions);
     
