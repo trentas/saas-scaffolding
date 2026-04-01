@@ -12,6 +12,7 @@
     "format": "prettier -w .",
     "db:reset": "supabase db reset",
     "db:migrate": "supabase db push",
+    "db:seed": "npx tsx --env-file=.env.local scripts/seed.ts",
     "db:generate-types": "supabase gen types typescript --local > lib/database.types.ts",
     "debug:test": "node scripts/test-debug.js",
     "debug:level": "DEBUG_LEVEL=TRACE npm run dev"
