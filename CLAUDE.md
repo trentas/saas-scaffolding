@@ -15,25 +15,25 @@ This project follows the **18-Factor App** methodology (https://github.com/trent
 | Factor | Principle | Status |
 |---|---|---|
 | 1. Declarative Codebase | Everything in version control, reproducible | Implemented |
-| 2. Contract-First Interfaces | Define interfaces before implementation | Planned — needs OpenAPI spec |
+| 2. Contract-First Interfaces | Define interfaces before implementation | Implemented — `openapi.yaml` documents all 23 routes |
 | 3. Dependency Management | Explicit, pinned, isolated deps | Implemented |
-| 4. Config, Credentials, Context | Env vars + secrets manager + structured config | Planned — needs env validation, secrets separation |
+| 4. Config, Credentials, Context | Env vars + secrets manager + structured config | Implemented — `lib/env.ts` Zod validation, fail-fast |
 | 5. Immutable Build Pipeline | Build once, deploy everywhere | Partial — CI + Docker, needs release artifacts |
 | 6. Evaluation-Driven Development | Statistical testing for non-deterministic systems | Partial — 84 tests, needs 70% coverage |
 | 7. Responsible AI by Design | Safety, fairness, accountability | N/A until AI features added |
 | 8. Identity, Access, Trust | Every actor has verifiable identity and scoped permissions | Implemented — auth, RBAC, 2FA, rate limit, audit |
-| 9. Disposability/Graceful Lifecycle | Fast start, graceful shutdown, health probes | Planned — needs health endpoint, graceful shutdown |
+| 9. Disposability/Graceful Lifecycle | Fast start, graceful shutdown, health probes | Partial — health endpoint at `/api/health`, needs graceful shutdown |
 | 10. Intelligent Backing Services | Attached resources, swappable via config | Partial — Supabase/Stripe/Resend as resources |
 | 11. Environment Parity | Dev ≈ staging ≈ production | Partial — Docker + seed, needs staging config |
 | 12. Stateless Processes + Caching | Share-nothing processes, intelligent caching | Partial — stateless app, but in-memory rate limiter |
 | 13. Adaptive Concurrency | Scale each process type independently | Planned — needs K8s/scaling config |
-| 14. Full-Spectrum Observability | Structured logs, traces, metrics | Planned — needs structured logging, error tracking |
+| 14. Full-Spectrum Observability | Structured logs, traces, metrics | Partial — structured JSON logging, needs error tracking + metrics |
 
 **Tier 4 (Intelligence)** — Factors 15-18 apply when AI features are added (model lifecycle, prompt engineering, agent orchestration, AI economics).
 
 **When making changes, check:** Does this align with the 18-factor principles? Specifically:
-- New API routes → define contract first (Factor 2), add rate limiting (Factor 8)
-- New config → validate at startup with fail-fast (Factor 4)
+- New API routes → update `openapi.yaml` first (Factor 2), add rate limiting (Factor 8), use `logger` not `console` (Factor 14)
+- New config → add to `lib/env.ts` Zod schema, validate at startup with fail-fast (Factor 4)
 - New backing service → treat as attached resource, swappable via config (Factor 10)
 - New feature → add tests (Factor 6), add structured logging (Factor 14)
 - New process → stateless, disposable, health-checkable (Factors 9, 12)
@@ -80,6 +80,30 @@ tests/                # Vitest test files
 ```
 
 ## Key Conventions
+
+### Contract-First (Factor 2)
+- All API routes are documented in `openapi.yaml` (OpenAPI 3.1)
+- **When adding or modifying an API route, update `openapi.yaml` FIRST** — define the contract before writing the implementation
+- Include: path, method, request/response schemas, auth requirements, rate limit tier
+- The spec is the source of truth for API consumers
+
+### Environment Variables (Factor 4)
+- All env vars are validated via Zod schema in `lib/env.ts`
+- Import `env` from `@/lib/env` instead of using `process.env` directly
+- **When adding a new env var:** add it to the schema in `lib/env.ts` (required or optional with default)
+- App fails fast on startup if required vars are missing
+
+### Health Check (Factor 9)
+- `GET /api/health` — public, no auth, no rate limiting
+- Returns `{ status, uptime, timestamp, checks: { supabase } }`
+- Use for Docker HEALTHCHECK, K8s probes, uptime monitoring
+
+### Logging (Factor 14)
+- Use `logger` from `lib/debug.ts` — never raw `console.log/error/warn`
+- Production: structured JSON to stdout (machine-parseable)
+- Development: human-readable with timestamps
+- Use `logger.withContext({ requestId, tenant, userId })` for child loggers with correlation
+- Use `generateRequestId()` from `lib/debug.ts` for request correlation
 
 ### Routing
 - Multi-tenant via `proxy.ts` (replaces middleware.ts in Next.js 16)
@@ -190,3 +214,6 @@ Dockerfile uses multi-stage build with `output: "standalone"` in next.config.ts.
 - Don't import brand icons from `lucide-react` (use `react-icons/fa6`)
 - Don't skip rate limiting on new API routes
 - Don't initialize Stripe eagerly at module level (use lazy init pattern)
+- Don't add API routes without updating `openapi.yaml` first (contract-first)
+- Don't use `process.env` directly — import `env` from `@/lib/env`
+- Don't use `console.log/error/warn` in API routes — use `logger` from `@/lib/debug`
