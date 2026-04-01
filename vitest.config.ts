@@ -11,7 +11,13 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     coverage: {
-      enabled: false,
+      provider: 'v8',
+      thresholds: {
+        lines: 70,
+        branches: 70,
+        functions: 70,
+        statements: 70,
+      },
     },
   },
   resolve: {
@@ -23,4 +29,3 @@ export default defineConfig({
     ],
   },
 });
-
