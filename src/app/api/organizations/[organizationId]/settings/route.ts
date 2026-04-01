@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { getEmailDomain, isPersonalEmailDomain, normalizeEmailDomain } from '@/lib/email-domain';
 import { canManageMembers } from '@/lib/permissions';
 import { apiRateLimit } from '@/lib/rate-limit';
@@ -139,7 +140,7 @@ export async function PATCH(
       { status: 200 }
     );
   } catch (error) {
-    console.error('Error updating organization settings:', error);
+    logger.error('Error updating organization settings:', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

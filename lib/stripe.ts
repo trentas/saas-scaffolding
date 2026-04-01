@@ -1,13 +1,14 @@
 import Stripe from 'stripe';
 
+import { env } from './env';
 import { supabaseAdmin } from './supabase';
 
 // Initialize Stripe (lazy to avoid build-time errors when env var is not set)
 function getStripeClient() {
-  if (!process.env.STRIPE_SECRET_KEY) {
+  if (!env.STRIPE_SECRET_KEY) {
     throw new Error('STRIPE_SECRET_KEY is not set');
   }
-  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+  return new Stripe(env.STRIPE_SECRET_KEY, {
     apiVersion: '2026-03-25.dahlia',
   });
 }
@@ -35,7 +36,7 @@ export const STRIPE_CONFIG = {
     pro: {
       name: 'Pro',
       price: 29,
-      priceId: process.env.STRIPE_PRO_PRICE_ID,
+      priceId: env.STRIPE_PRO_PRICE_ID,
       features: [
         'Unlimited team members',
         'Priority support',
@@ -46,7 +47,7 @@ export const STRIPE_CONFIG = {
     enterprise: {
       name: 'Enterprise',
       price: 99,
-      priceId: process.env.STRIPE_ENTERPRISE_PRICE_ID,
+      priceId: env.STRIPE_ENTERPRISE_PRICE_ID,
       features: [
         'Everything in Pro',
         'Custom integrations',

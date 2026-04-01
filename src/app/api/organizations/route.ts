@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 
 import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions , createOrganization } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { apiRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
 import { isValidTenantSlug } from '@/lib/tenant-utils';
@@ -72,8 +73,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(organization, { status: 201 });
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('Organization creation error:', error);
+    logger.error('Organization creation error:', { error: error instanceof Error ? error.message : error });
     
     // Handle unique constraint violation
     if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
@@ -132,8 +132,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(formattedOrganizations);
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('Get organizations error:', error);
+    logger.error('Get organizations error:', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

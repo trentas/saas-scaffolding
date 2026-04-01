@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import {
   generateAccessToken,
   verifyRefreshToken,
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
       tokenType: 'Bearer',
     });
   } catch (error: unknown) {
-    console.error('Error refreshing microservice token:', error);
+    logger.error('Error refreshing microservice token:', { error: error instanceof Error ? error.message : error });
     
     const errorMessage = error instanceof Error ? error.message : 'Invalid refresh token';
     

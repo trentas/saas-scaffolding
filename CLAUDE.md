@@ -6,6 +6,38 @@ Project context for Claude Code. This file is loaded automatically.
 
 SaaS scaffolding template — multi-tenant Next.js app with auth, billing, RBAC, and team management. Used as a starting point for new SaaS projects.
 
+## Architecture Standard: 18-Factor App
+
+This project follows the **18-Factor App** methodology (https://github.com/trentas/18-factor), a modern evolution of the 12-Factor App for the AI era. All architectural decisions, new features, and refactors must align with these factors.
+
+**Applicable factors (Tiers 1-3):**
+
+| Factor | Principle | Status |
+|---|---|---|
+| 1. Declarative Codebase | Everything in version control, reproducible | Implemented |
+| 2. Contract-First Interfaces | Define interfaces before implementation | Planned — needs OpenAPI spec |
+| 3. Dependency Management | Explicit, pinned, isolated deps | Implemented |
+| 4. Config, Credentials, Context | Env vars + secrets manager + structured config | Planned — needs env validation, secrets separation |
+| 5. Immutable Build Pipeline | Build once, deploy everywhere | Partial — CI + Docker, needs release artifacts |
+| 6. Evaluation-Driven Development | Statistical testing for non-deterministic systems | Partial — 84 tests, needs 70% coverage |
+| 7. Responsible AI by Design | Safety, fairness, accountability | N/A until AI features added |
+| 8. Identity, Access, Trust | Every actor has verifiable identity and scoped permissions | Implemented — auth, RBAC, 2FA, rate limit, audit |
+| 9. Disposability/Graceful Lifecycle | Fast start, graceful shutdown, health probes | Planned — needs health endpoint, graceful shutdown |
+| 10. Intelligent Backing Services | Attached resources, swappable via config | Partial — Supabase/Stripe/Resend as resources |
+| 11. Environment Parity | Dev ≈ staging ≈ production | Partial — Docker + seed, needs staging config |
+| 12. Stateless Processes + Caching | Share-nothing processes, intelligent caching | Partial — stateless app, but in-memory rate limiter |
+| 13. Adaptive Concurrency | Scale each process type independently | Planned — needs K8s/scaling config |
+| 14. Full-Spectrum Observability | Structured logs, traces, metrics | Planned — needs structured logging, error tracking |
+
+**Tier 4 (Intelligence)** — Factors 15-18 apply when AI features are added (model lifecycle, prompt engineering, agent orchestration, AI economics).
+
+**When making changes, check:** Does this align with the 18-factor principles? Specifically:
+- New API routes → define contract first (Factor 2), add rate limiting (Factor 8)
+- New config → validate at startup with fail-fast (Factor 4)
+- New backing service → treat as attached resource, swappable via config (Factor 10)
+- New feature → add tests (Factor 6), add structured logging (Factor 14)
+- New process → stateless, disposable, health-checkable (Factors 9, 12)
+
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack, standalone output)

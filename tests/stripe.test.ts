@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+// Mock env before importing
+vi.mock('@/lib/env', () => ({
+  env: {
+    STRIPE_SECRET_KEY: 'sk_test_mock',
+    STRIPE_PRO_PRICE_ID: 'price_pro',
+    STRIPE_ENTERPRISE_PRICE_ID: 'price_enterprise',
+  },
+}));
+
 // Mock supabase before importing
 vi.mock('@/lib/supabase', () => ({
   supabaseAdmin: {
@@ -36,9 +45,6 @@ vi.mock('stripe', () => {
     },
   };
 });
-
-// Set env before importing stripe module
-process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
 
 import {
   STRIPE_CONFIG,

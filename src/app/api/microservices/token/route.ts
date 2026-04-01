@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 
 import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       tokenType: 'Bearer',
     });
   } catch (error: unknown) {
-    console.error('Error generating microservice token:', error);
+    logger.error('Error generating microservice token:', { error: error instanceof Error ? error.message : error });
     
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     

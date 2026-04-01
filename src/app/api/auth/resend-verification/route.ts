@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { v4 as uuidv4 } from 'uuid';
 
+import { logger } from '@/lib/debug';
 import { sendVerificationEmail } from '@/lib/email';
 import { strictAuthRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -75,8 +76,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('Resend verification error:', error);
+    logger.error('Resend verification error:', { error: error instanceof Error ? error.message : error });
     
     return NextResponse.json(
       { message: 'Internal server error' },

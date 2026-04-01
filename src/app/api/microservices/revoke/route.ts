@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { revokeRefreshToken, revokeAllUserTokens } from '@/lib/microservice-auth';
 import { apiRateLimit } from '@/lib/rate-limit';
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: 'Refresh token revoked successfully' });
   } catch (error: unknown) {
-    console.error('Error revoking refresh token:', error);
+    logger.error('Error revoking refresh token:', { error: error instanceof Error ? error.message : error });
     
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     

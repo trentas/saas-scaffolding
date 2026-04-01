@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { authRateLimit } from '@/lib/rate-limit';
 import { verify2FACode } from '@/lib/two-factor';
 
@@ -50,8 +51,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('2FA verification error:', error);
+    logger.error('2FA verification error:', { error: error instanceof Error ? error.message : error });
     
     return NextResponse.json(
       { message: 'Internal server error' },

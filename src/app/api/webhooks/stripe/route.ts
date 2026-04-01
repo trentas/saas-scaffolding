@@ -1,6 +1,7 @@
 import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { logger } from '@/lib/debug';
 import { stripe, handleStripeWebhook } from '@/lib/stripe';
 
 export async function POST(request: NextRequest) {
@@ -28,8 +29,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('Stripe webhook error:', error);
+    logger.error('Stripe webhook error:', { error: error instanceof Error ? error.message : error });
     
     if (error && typeof error === 'object' && 'type' in error && error.type === 'StripeSignatureVerificationError') {
       return NextResponse.json(

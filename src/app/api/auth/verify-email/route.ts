@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { verifyEmailToken } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { strictAuthRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
@@ -31,8 +32,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: unknown) {
-    // eslint-disable-next-line no-console
-    console.error('Email verification error:', error);
+    logger.error('Email verification error:', { error: error instanceof Error ? error.message : error });
     
     return NextResponse.json(
       { message: 'Internal server error' },

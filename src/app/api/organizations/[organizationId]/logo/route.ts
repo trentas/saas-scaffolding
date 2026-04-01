@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { uploadRateLimit } from '@/lib/rate-limit';
 import { uploadImageToStorage, deleteFileFromStorage } from '@/lib/storage';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -126,7 +127,7 @@ export async function POST(
       { status: 200 }
     );
   } catch (error) {
-    console.error('Logo upload error:', error);
+    logger.error('Logo upload error:', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

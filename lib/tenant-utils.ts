@@ -1,3 +1,5 @@
+import { env } from './env';
+
 export interface TenantContext {
   tenant: string | null;
   isSubdomain: boolean;
@@ -62,7 +64,7 @@ export function getTenantFromUrl(url?: string): TenantContext {
  */
 export function getTenantUrl(tenant: string, path: string = '', isSubdomain: boolean = true): string {
   if (isSubdomain) {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = env.NEXT_PUBLIC_APP_URL;
     const domain = new URL(baseUrl).hostname;
     return `https://${tenant}.${domain}${path}`;
   } else {

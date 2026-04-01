@@ -1,12 +1,13 @@
 import { Resend } from 'resend';
 
 import { debugEmail, logError } from './debug';
+import { env } from './env';
 
-const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_for_build');
+const resend = new Resend(env.RESEND_API_KEY);
 
 export async function sendVerificationEmail(email: string, token: string, name: string) {
   try {
-    const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${token}`;
+    const verificationUrl = `${env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${token}`;
     
     debugEmail('Sending verification email', {
       to: email,
@@ -16,11 +17,11 @@ export async function sendVerificationEmail(email: string, token: string, name: 
     });
     
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
+      from: env.EMAIL_FROM,
       to: email,
       subject: 'Verify your email address',
       html: `
-        <h1>Welcome to ${process.env.NEXT_PUBLIC_APP_NAME}!</h1>
+        <h1>Welcome to ${env.NEXT_PUBLIC_APP_NAME}!</h1>
         <p>Hi ${name},</p>
         <p>Please verify your email address by clicking the link below:</p>
         <a href="${verificationUrl}">${verificationUrl}</a>
@@ -42,7 +43,7 @@ export async function sendVerificationEmail(email: string, token: string, name: 
 
 export async function sendPasswordResetEmail(email: string, token: string, name: string) {
   try {
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${token}`;
+    const resetUrl = `${env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${token}`;
     
     debugEmail('Sending password reset email', {
       to: email,
@@ -52,7 +53,7 @@ export async function sendPasswordResetEmail(email: string, token: string, name:
     });
     
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
+      from: env.EMAIL_FROM,
       to: email,
       subject: 'Reset your password',
       html: `
@@ -84,7 +85,7 @@ export async function sendInvitationEmail(
   inviterName: string
 ) {
   try {
-    const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/accept-invite?token=${token}`;
+    const invitationUrl = `${env.NEXT_PUBLIC_APP_URL}/accept-invite?token=${token}`;
     
     debugEmail('Sending invitation email', {
       to: email,
@@ -95,13 +96,13 @@ export async function sendInvitationEmail(
     });
     
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
+      from: env.EMAIL_FROM,
       to: email,
       subject: `You've been invited to join ${organizationName}`,
       html: `
         <h1>You've been invited to join ${organizationName}!</h1>
         <p>Hi there,</p>
-        <p><strong>${inviterName}</strong> has invited you to join <strong>${organizationName}</strong> on ${process.env.NEXT_PUBLIC_APP_NAME}.</p>
+        <p><strong>${inviterName}</strong> has invited you to join <strong>${organizationName}</strong> on ${env.NEXT_PUBLIC_APP_NAME}.</p>
         <p>Click the button below to accept the invitation:</p>
         <a href="${invitationUrl}" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Accept Invitation</a>
         <p>Or copy and paste this link into your browser:</p>
@@ -140,7 +141,7 @@ export async function sendOwnershipTransferEmail(
     });
     
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
+      from: env.EMAIL_FROM,
       to: email,
       subject: `You're now the owner of ${organizationName}`,
       html: `
@@ -156,9 +157,9 @@ export async function sendOwnershipTransferEmail(
           <li>Delete the organization</li>
         </ul>
         <p>To manage your organization, visit your dashboard:</p>
-        <a href="${process.env.NEXT_PUBLIC_APP_URL}" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Go to Dashboard</a>
+        <a href="${env.NEXT_PUBLIC_APP_URL}" style="display: inline-block; padding: 12px 24px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Go to Dashboard</a>
         <p>If you have any questions or concerns, please don't hesitate to reach out.</p>
-        <p>Best regards,<br>The ${process.env.NEXT_PUBLIC_APP_NAME} Team</p>
+        <p>Best regards,<br>The ${env.NEXT_PUBLIC_APP_NAME} Team</p>
       `
     });
 
@@ -184,20 +185,20 @@ export async function send2FACodeEmail(email: string, code: string, name: string
     });
     
     const result = await resend.emails.send({
-      from: process.env.EMAIL_FROM!,
+      from: env.EMAIL_FROM,
       to: email,
       subject: `Your login verification code - ${code}`,
       html: `
         <h1>Your Login Verification Code</h1>
         <p>Hi ${name},</p>
-        <p>You've requested to sign in to ${process.env.NEXT_PUBLIC_APP_NAME}. Use the verification code below to complete your login:</p>
+        <p>You've requested to sign in to ${env.NEXT_PUBLIC_APP_NAME}. Use the verification code below to complete your login:</p>
         <div style="background-color: #f5f5f5; border: 2px solid #007bff; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
           <h2 style="margin: 0; font-size: 32px; letter-spacing: 8px; color: #007bff; font-family: monospace;">${code}</h2>
         </div>
         <p><strong>This code will expire in 10 minutes.</strong></p>
         <p>If you didn't request this code, please ignore this email or contact support if you have concerns.</p>
         <p>For security reasons, never share this code with anyone.</p>
-        <p>Best regards,<br>The ${process.env.NEXT_PUBLIC_APP_NAME} Team</p>
+        <p>Best regards,<br>The ${env.NEXT_PUBLIC_APP_NAME} Team</p>
       `
     });
 

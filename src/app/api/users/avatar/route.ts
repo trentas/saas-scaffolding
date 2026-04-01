@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 import { v4 as uuidv4 } from 'uuid';
 
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { uploadRateLimit } from '@/lib/rate-limit';
 import { uploadImageToStorage, deleteFileFromStorage } from '@/lib/storage';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Avatar upload error:', error);
+    logger.error('Avatar upload error:', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }
@@ -138,7 +139,7 @@ export async function DELETE(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Avatar delete error:', error);
+    logger.error('Avatar delete error:', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }

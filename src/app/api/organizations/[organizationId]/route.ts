@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 
 import { logAuditEvent } from '@/lib/audit-logger';
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { canManageMembers } from '@/lib/permissions';
 import { apiRateLimit } from '@/lib/rate-limit';
 import { supabaseAdmin } from '@/lib/supabase';
@@ -98,7 +99,7 @@ export async function PATCH(
       .single();
 
     if (updateError) {
-      console.error('Error updating organization:', updateError);
+      logger.error('Error updating organization:', { error: updateError instanceof Error ? updateError.message : updateError });
       return NextResponse.json(
         { message: 'Failed to update organization name' },
         { status: 500 }
@@ -120,7 +121,7 @@ export async function PATCH(
 
     return NextResponse.json(updatedOrg, { status: 200 });
   } catch (error: unknown) {
-    console.error('Organization update error:', error);
+    logger.error('Organization update error:', { error: error instanceof Error ? error.message : error });
     return NextResponse.json(
       { message: 'Internal server error' },
       { status: 500 }
