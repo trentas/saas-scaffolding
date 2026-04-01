@@ -4,11 +4,15 @@ import NextAuth from 'next-auth/next';
 
 import { authOptions } from '@/lib/auth';
 import { debugAuth, logger } from '@/lib/debug';
+import { authRateLimit } from '@/lib/rate-limit';
 
 const handler = NextAuth(authOptions);
 
 // Wrap handlers to add logging
 async function wrappedHandler(req: NextRequest, context: { params: Promise<{ nextauth: string[] }> }) {
+  const limited = authRateLimit(req);
+  if (limited) return limited;
+
   const pathname = req.nextUrl.pathname;
   const searchParams = req.nextUrl.searchParams;
   
