@@ -1,52 +1,58 @@
 # SaaS Multi-Tenant Scaffolding
 
-A production-ready multi-tenant SaaS scaffolding built with Next.js 15, Supabase, Stripe, and shadcn/ui. This template provides a solid foundation for building scalable multi-tenant SaaS applications.
+A production-ready multi-tenant SaaS scaffolding built with Next.js 16, Supabase, Stripe, and shadcn/ui. Follows the [18-Factor App](https://github.com/trentas/18-factor) methodology.
 
 ## Features
 
 ### Core Features
-- ✅ **Multi-tenant Architecture** - Subdomain-based tenant routing (`company.app.com`)
-- ✅ **Secure Authentication** - NextAuth.js with email verification, password reset, and 2FA
-- ✅ **User Management** - Role-based access control (owner/admin/member)
-- ✅ **Team Management** - Email invitations, role management, member control, and ownership transfer
-- ✅ **User Profile & Settings** - Complete profile management, password change, 2FA, theme preferences (persists across sessions)
-- ✅ **Organization Management** - Logo upload, settings, and organization deletion (owner only)
-- ✅ **Database** - Supabase with Row Level Security (RLS) policies
-- ✅ **Billing** - Stripe integration for subscriptions and payments
-- ✅ **Email System** - Resend.com integration for verification, notifications, and ownership transfer alerts
-- ✅ **Security Features** - Account locking, strong passwords, session management
-- ✅ **Theme System** - Light/Dark/System mode with cross-browser persistence
-- ✅ **UI Components** - shadcn/ui with Tailwind CSS 4
-- ✅ **Feature Flags** - Modular feature system for easy customization
+- **Multi-tenant Architecture** — Subdomain-based tenant routing (`company.app.com`)
+- **Secure Authentication** — NextAuth.js with email verification, password reset, and 2FA (TOTP)
+- **User Management** — Role-based access control (owner/admin/member)
+- **Team Management** — Email invitations, role management, member control, and ownership transfer
+- **User Profile & Settings** — Profile management, password change, 2FA, theme preferences
+- **Organization Management** — Logo upload, settings, rename, and deletion (owner only)
+- **Database** — Supabase with Row Level Security (RLS) on all tables
+- **Billing** — Stripe v21 integration for subscriptions and payments
+- **Email System** — Resend integration for verification, notifications, and alerts
+- **Rate Limiting** — Per-route rate limiting with 4 tiers (auth, strict, API, upload)
+- **Security** — Account locking, strong passwords, session management, audit logging
+- **Theme System** — Light/Dark/System mode with cross-browser persistence
+- **UI Components** — shadcn/ui with Tailwind CSS 4
+- **Feature Flags** — Modular feature system for easy customization
+- **Health Check** — `/api/health` endpoint with backing service checks
+- **Structured Logging** — JSON logs in production, human-readable in development
+- **API Documentation** — OpenAPI 3.1 spec (`openapi.yaml`)
 
 ### Modular Features (Configurable)
-- 🔧 **Audit Log** - Organization activity auditing and history (feature flag `auditLog`)
-- 🔧 **Analytics** - Usage tracking and analytics dashboard
-- 🔧 **Notifications** - Email and push notification system
-- 🔧 **API Keys** - API key management for integrations
-- 🔧 **Webhooks** - Webhook system for integrations
+- **Audit Log** — Organization activity auditing and history
+- **Analytics** — Usage tracking and analytics dashboard
+- **Notifications** — Email notification system
+- **API Keys** — API key management for integrations
+- **Webhooks** — Webhook system for integrations
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript
+- **Framework**: Next.js 16 (App Router, Turbopack, standalone output)
+- **Frontend**: React 19, TypeScript 5.9
 - **Styling**: Tailwind CSS 4, shadcn/ui components
-- **Backend**: Supabase (PostgreSQL + Auth + RLS)
-- **Payments**: Stripe
-- **Authentication**: NextAuth.js with database sessions
-- **Email**: Resend.com for transactional emails
-- **Security**: bcrypt for password hashing, account locking, 2FA
-- **Deployment**: Vercel-ready
+- **Database**: Supabase (PostgreSQL + RLS + Storage)
+- **Payments**: Stripe v21
+- **Authentication**: NextAuth.js v4 (JWT strategy, credential + Google OAuth)
+- **Email**: Resend for transactional emails
+- **Testing**: Vitest 4 with 70% coverage threshold
+- **CI/CD**: GitHub Actions (lint, typecheck, test, build, security audit)
+- **Container**: Docker with multi-stage build
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
-- npm or yarn
+- Node.js 20.9+
+- npm
 - Supabase account
-- Stripe account (for billing features)
-- Resend.com account (for email functionality)
-- Google Cloud Console project (optional, for Google OAuth)
+- Stripe account (optional — for billing features)
+- Resend account (for email functionality)
+- Google Cloud Console project (optional — for Google OAuth)
 
 ### 1. Clone and Install
 
@@ -58,402 +64,241 @@ npm install
 
 ### 2. Environment Setup
 
-Copy the environment template:
-
-```bash
-cp env.example .env.local
-```
-
-Fill in your environment variables:
+Create `.env.local` with the required variables. The app validates all env vars at startup and fails fast if any required vars are missing.
 
 ```env
-# Supabase Configuration (Required)
+# Supabase (Required)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# NextAuth Configuration (Required)
+# NextAuth (Required)
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-nextauth-secret
-NEXTAUTH_DEBUG=true
 
-# JWT Configuration for Microservices (Required)
+# Email (Required)
+RESEND_API_KEY=re_...
+EMAIL_FROM=noreply@example.com
+
+# JWT for Microservices (Optional — falls back to NEXTAUTH_SECRET)
 JWT_SECRET=your-jwt-secret-key-min-32-characters-long
-JWT_REFRESH_SECRET=your-jwt-refresh-secret-key-optional-uses-jwt-secret-if-not-set
 JWT_ISSUER=saas-scaffolding
 JWT_AUDIENCE=microservices
 
 # Google OAuth (Optional)
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
 
-# Stripe Configuration (Required for billing)
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+# Stripe (Optional — billing disabled without these)
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRO_PRICE_ID=price_...
 STRIPE_ENTERPRISE_PRICE_ID=price_...
 
-# App Configuration (Optional)
+# App (Optional — has defaults)
 NEXT_PUBLIC_APP_NAME="My SaaS"
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_DEFAULT_LOGO_URL=/logo.svg
 
-# Resend Configuration (Required for emails)
-RESEND_API_KEY=re_...
-
-# Email Configuration
-EMAIL_FROM=noreply@example.com
-
-# Debug Configuration
+# Debug (Optional)
 DEBUG_LEVEL=DEBUG
-DEBUG_AUTH=true
-DEBUG_EMAIL=true
-DEBUG_DATABASE=true
-DEBUG_API=true
-
-# Feature Flags (Optional)
-FEATURES__AUDIT_LOG=false
-FEATURES__STRIPE_SUPPORT=false
-NEXT_PUBLIC_FEATURES__AUDIT_LOG=false
-NEXT_PUBLIC_FEATURES__STRIPE_SUPPORT=false
 ```
 
 ### 3. Database Setup
 
-#### Supabase Setup
+1. Create a Supabase project
+2. Run the migrations in order:
+   ```bash
+   # If using Supabase CLI:
+   npm run db:migrate
 
-1. Create a new Supabase project
-2. Run the migration files in order:
-   ```sql
-   -- Run these in your Supabase SQL editor in this exact order:
-   
-   -- 1. Initial schema
-   -- File: supabase/migrations/001_initial_schema.sql
-   
-   -- 2. Authentication enhancements
-   -- File: supabase/migrations/002_auth_enhancements.sql
-   
-   -- 3. User preferences and MFA settings
-   -- File: supabase/migrations/003_user_preferences.sql
-   
-   -- 4. Organization logo support
-   -- File: supabase/migrations/004_add_logo_url.sql
-   
-   -- 5. Refresh token support
-   -- File: supabase/migrations/005_refresh_tokens.sql
-
-   -- 6. Automatic domain allow-list configuration
-   -- File: supabase/migrations/006_auto_accept_domain_setting.sql
-
-   -- 7. Audit logs table and policies
-   -- File: supabase/migrations/007_audit_logs.sql
-
-   -- 8. Row Level Security policies (must run after all migrations)
-   -- File: supabase/policies/rls_policies.sql
+   # Or run each file manually in Supabase SQL editor:
+   # supabase/migrations/001_initial_schema.sql
+   # supabase/migrations/002_auth_enhancements.sql
+   # supabase/migrations/003_user_preferences.sql
+   # supabase/migrations/004_add_logo_url.sql
+   # supabase/migrations/005_refresh_tokens.sql
+   # supabase/migrations/006_auto_accept_domain_setting.sql
+   # supabase/migrations/007_audit_logs.sql
+   # supabase/policies/rls_policies.sql
    ```
+3. Create storage buckets: `organization-logos` and `user-avatars` (public)
+4. Run storage policies: `supabase/storage/storage_policies.sql`
 
-3. Verify that Row Level Security is enabled on all tables (this is automatically done by step 7 above, but you can verify in Supabase dashboard)
-4. Set up authentication providers in Supabase dashboard
-
-#### Database Schema
-
-The scaffolding includes these main tables:
-- `organizations` - Tenant data with slug, plan, settings, and logo_url
-- `users` - User profiles with preferences and theme settings
-- `organization_members` - User-organization relationships with roles (owner/admin/member)
-- `invitations` - Email invitations with tokens
-- `subscriptions` - Stripe subscription data
-
-#### Supabase Storage Setup
-
-1. Create two public storage buckets in Supabase Dashboard:
-   - `organization-logos`
-   - `user-avatars`
-2. For each bucket, enable **Public** access so assets can be served via CDN.
-3. Configure storage policies to allow authenticated uploads and public reads by running the script in `supabase/storage/storage_policies.sql` inside the Supabase SQL editor (it covers both buckets).
-
-> The application uses the Supabase service role for backend uploads, which bypasses these policies. Applying the script still ensures dashboard operations or any client-side tooling follow consistent, secure rules.
-
-### 4. Stripe Setup (Optional)
-
-1. Create a Stripe account
-2. Get your API keys from the Stripe dashboard
-3. Create products and prices for your plans
-4. Set up webhook endpoints pointing to `/api/webhooks/stripe`
-5. Configure webhook events:
-   - `customer.subscription.created`
-   - `customer.subscription.updated`
-   - `customer.subscription.deleted`
-   - `invoice.payment_succeeded`
-   - `invoice.payment_failed`
-
-### 5. Google OAuth Setup (Optional)
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable Google+ API
-4. Create OAuth 2.0 credentials
-5. Add authorized redirect URIs:
-   - `http://localhost:3000/api/auth/callback/google` (development)
-   - `https://yourdomain.com/api/auth/callback/google` (production)
-
-### 6. Run the Application
+### 4. Seed Demo Data
 
 ```bash
-npm run dev
+npm run db:seed
 ```
 
-Visit `http://localhost:3000` to see your application.
+Creates a demo user (`demo@example.com` / `password123`) with an organization at `/demo/dashboard`.
 
-### 7. Run the Test Suite (Optional but recommended)
+### 5. Run
 
 ```bash
-npm test
+npm run dev          # Development (Turbopack)
+npm run build        # Production build
+npm run start        # Production server
 ```
 
-> The repository ships with Vitest-based unit tests covering the feature flag helpers, audit logger, and audit log API route.
+### 6. Run Tests
+
+```bash
+npm test                        # Run all tests
+npx vitest run --coverage       # Run with coverage report
+```
+
+## Commands
+
+| Command | Description |
+|---|---|
+| `npm run dev` | Start dev server (Turbopack) |
+| `npm run build` | Production build |
+| `npm run start` | Production server |
+| `npm run lint` | ESLint with auto-fix |
+| `npm test` | Run tests (Vitest) |
+| `npm run format` | Prettier formatting |
+| `npm run db:seed` | Seed demo data |
+| `npm run db:migrate` | Push migrations to Supabase |
+| `npm run db:reset` | Reset database |
 
 ## Project Structure
 
 ```
-├── /app
-│   ├── /auth (login/signup)
-│   │   └── /post-login (post-auth redirect resolver)
-│   ├── /setup (organization onboarding)
-│   ├── /[tenant] (tenant-specific routes)
-│   │   ├── /dashboard
-│   │   ├── /profile (user profile & settings)
-│   │   ├── /team (team management)
-│   │   ├── /billing
-│   │   ├── /audit-log (organization audit trail, feature flagged)
-│   │   ├── /settings (organization settings)
-│   │   ├── /analytics (placeholder)
-│   │   ├── /api-keys (placeholder)
-│   │   └── /webhooks (placeholder)
-│   └── /api (API routes)
-│       ├── /auth (authentication endpoints)
-│       ├── /organizations (organization management)
-│       ├── /tenants/[tenant]/audit-logs (audit log listings, feature flagged)
-│       └── /webhooks (webhook handlers)
-├── /components
-│   ├── /ui (shadcn components)
-│   ├── /tenant (tenant-specific components: Navbar, Sidebar, OrganizationSwitcher)
-│   ├── /organization (organization components: LogoUpload, DeleteOrganizationDialog)
-│   ├── /profile (profile components: ChangePasswordDialog, Enable2FADialog, etc.)
-│   ├── /team (team components: TeamMemberCard, TransferOwnershipDialog)
-│   ├── /providers (React providers)
-│   └── theme-initializer.tsx (Theme persistence component)
-├── /features (modular feature system)
-│   ├── /billing
-│   ├── /analytics
-│   ├── /notifications
-│   ├── /api-keys
-│   └── /webhooks
-├── /lib
-│   ├── auth.ts (NextAuth configuration)
-│   ├── supabase.ts (Supabase client)
-│   ├── tenant.ts (tenant utilities)
-│   ├── stripe.ts (Stripe integration)
-│   ├── storage.ts (Supabase Storage utilities)
-│   ├── email.ts (Email templates and sending)
-│   ├── permissions.ts (role-based access)
-│   ├── form-schema.ts (Zod validation schemas)
-│   └── translations.ts (i18n translations)
-├── /config
-│   └── features.config.ts (feature flags)
-├── /middleware.ts (subdomain routing)
-└── /supabase
-    ├── /migrations (SQL migrations)
-    └── /policies (RLS policies)
+├── proxy.ts                    # Tenant routing (replaces middleware.ts in Next.js 16)
+├── openapi.yaml                # OpenAPI 3.1 spec for all API routes
+├── Dockerfile                  # Multi-stage production build
+├── docker-compose.yml          # Production + dev profiles
+├── next.config.ts              # Next.js config (standalone output, MDX)
+├── vitest.config.ts            # Test config with 70% coverage threshold
+├── .github/workflows/ci.yml    # CI pipeline
+│
+├── src/app/
+│   ├── api/                    # API route handlers (23 routes)
+│   │   ├── health/             # Health check endpoint
+│   │   ├── auth/               # Authentication (signup, verify, 2FA, password reset)
+│   │   ├── organizations/      # Organization CRUD, settings, logo
+│   │   ├── tenants/            # Tenant-scoped routes (audit logs)
+│   │   ├── microservices/      # JWT token management
+│   │   ├── users/              # User avatar upload
+│   │   └── webhooks/           # Stripe webhooks
+│   ├── auth/                   # Auth pages (signin, signup, reset, verify, 2FA)
+│   ├── [tenant]/               # Tenant routes (dashboard, profile, team, billing, etc.)
+│   └── setup/                  # Organization onboarding
+│
+├── src/components/             # React components
+│   ├── ui/                     # shadcn/ui components
+│   ├── tenant/                 # Navbar, Sidebar, OrganizationSwitcher
+│   ├── organization/           # LogoUpload, DeleteOrganizationDialog
+│   ├── profile/                # ChangePasswordDialog, Enable2FADialog
+│   ├── team/                   # TeamMemberCard, TransferOwnershipDialog
+│   └── blocks/                 # Landing page blocks
+│
+├── src/actions/                # Server actions (organization, team, profile)
+├── src/hooks/                  # Custom React hooks
+│
+├── lib/                        # Core utilities
+│   ├── env.ts                  # Env validation (Zod schema, fail-fast)
+│   ├── auth.ts                 # NextAuth configuration
+│   ├── supabase.ts             # Supabase clients
+│   ├── stripe.ts               # Stripe integration (lazy init)
+│   ├── rate-limit.ts           # Rate limiting (4 tiers)
+│   ├── debug.ts                # Structured logging (JSON prod, readable dev)
+│   ├── permissions.ts          # RBAC role-based access
+│   ├── two-factor.ts           # 2FA (TOTP + backup codes)
+│   ├── microservice-auth.ts    # JWT token management
+│   ├── audit-logger.ts         # Audit event logging
+│   ├── email.ts                # Email templates and sending
+│   ├── tenant.ts               # Tenant context resolution
+│   ├── storage.ts              # Supabase Storage utilities
+│   └── form-schema.ts          # Zod validation schemas
+│
+├── features/                   # Modular feature modules
+├── config/                     # Feature flag configuration
+├── supabase/                   # Migrations, RLS policies, storage policies
+├── scripts/                    # Dev scripts (seed, debug, clean)
+└── tests/                      # Vitest test files
 ```
 
-## Feature Configuration
-
-The scaffolding uses a feature flag system to enable/disable modules:
-
-```typescript
-// config/features.config.ts
-export const featuresConfig = {
-  billing: {
-    enabled: false, // Set to true to enable billing
-    name: 'Billing',
-    description: 'Stripe billing and subscription management',
-  },
-  analytics: {
-    enabled: false, // Set to true to enable analytics
-    name: 'Analytics',
-    description: 'Usage tracking and analytics',
-  },
-  auditLog: {
-    enabled: false,
-    name: 'Audit Log',
-    description: 'Organization activity auditing and history',
-  },
-  stripeSupport: {
-    enabled: false,
-    name: 'Stripe Support',
-    description: 'Stripe integration for billing and payments',
-  },
-  // ... other features
-};
-```
-
-Feature flags can be overridden per-environment without changing the codebase. Set `FEATURES__<FEATURE_NAME>=true|false` for server-only evaluation or `NEXT_PUBLIC_FEATURES__<FEATURE_NAME>=true|false` when client-side checks are required. For example, enable the audit log in production with:
+## Docker
 
 ```bash
-FEATURES__AUDIT_LOG=true
-NEXT_PUBLIC_FEATURES__AUDIT_LOG=true
+# Production
+docker compose up app
+
+# Development (hot reload)
+docker compose --profile dev up dev
 ```
 
-## Customization
+## CI/CD
 
-### Adding New Features
+GitHub Actions pipeline runs on push/PR to main:
 
-1. Create feature module in `/features/[feature-name]/`
-2. Add feature configuration in `/config/features.config.ts`
-3. Create API routes in `/app/api/[feature-name]/`
-4. Add UI components and pages
+1. **Lint** — ESLint (errors fail, warnings allowed)
+2. **Type Check** — `tsc --noEmit`
+3. **Test** — Vitest with coverage
+4. **Build** — `next build` (runs after lint + typecheck + test)
+5. **Security Audit** — `npm audit --audit-level=high`
 
-### Theming
+## API Documentation
 
-The scaffolding includes a fully functional theme system:
-- **Theme Options**: Light, Dark, and System (follows OS preference)
-- **Persistence**: Theme preference saved in database and persists across browsers/sessions
-- **Organization Logos**: Upload custom logos that appear in navbar (stored in Supabase Storage)
-- **Default Logo**: Set `NEXT_PUBLIC_DEFAULT_LOGO_URL` environment variable for fallback logo
-- **Customization**: 
-  - Edit `src/styles/globals.css` for global styles
-  - Use Tailwind CSS classes for component styling
-  - Leverage shadcn/ui component variants
+All 23 API routes are documented in `openapi.yaml` (OpenAPI 3.1). Routes are organized by tag:
 
-### Database Modifications
+| Tag | Routes | Description |
+|---|---|---|
+| health | 1 | Service health with Supabase check |
+| auth | 13 | Authentication, signup, 2FA, password reset |
+| organizations | 5 | Organization CRUD, settings, logo |
+| tenants | 1 | Tenant-scoped audit logs |
+| microservices | 3 | JWT token generation, refresh, revoke |
+| users | 2 | Avatar upload and delete |
+| webhooks | 1 | Stripe webhook receiver |
 
-1. Create new migration files in `/supabase/migrations/`
-2. Update RLS policies in `/supabase/policies/`
-3. Update TypeScript types in `/lib/supabase.ts`
+## Rate Limiting
 
-## Deployment
+Every API route has rate limiting applied as the first operation:
 
-### Vercel Deployment
+| Tier | Limit | Routes |
+|---|---|---|
+| `authRateLimit` | 10 req/min | Login, signup, 2FA |
+| `strictAuthRateLimit` | 5 req/15min | Password reset, email verify, resend |
+| `apiRateLimit` | 60 req/min | Authenticated API routes |
+| `uploadRateLimit` | 10 req/min | File uploads (avatar, logo) |
 
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Add environment variables in Vercel dashboard
-4. Deploy!
-
-### Environment Variables for Production
-
-Make sure to set these in your production environment:
-- All Supabase variables
-- NextAuth variables with production URLs
-- Stripe production keys
-- Google OAuth production credentials
+Exceptions: Stripe webhook (signature verification), health check (public).
 
 ## Authentication Flow
 
-1. **Sign Up**: User creates account → email verification required
-2. **Organization Setup**: User creates organization → becomes owner automatically
-3. **Sign In**: User signs in → automatically redirected to organization dashboard (or setup if no orgs)
-4. **Multi-tenant**: Users can belong to multiple organizations with different roles
-5. **Session Management**: Theme preferences and user data loaded automatically on login
+1. **Sign Up** — User creates account, email verification required
+2. **Organization Setup** — User creates organization, becomes owner
+3. **Sign In** — Redirected to organization dashboard (or setup if no orgs)
+4. **Multi-tenant** — Users can belong to multiple organizations with different roles
+5. **2FA** — Optional TOTP-based two-factor authentication
 
 ## Role-Based Access Control
 
-- **Owner**: 
-  - Full control over organization, billing, user management
-  - Can transfer ownership to another member (becomes Admin after transfer)
-  - Can delete organization
-  - Cannot remove themselves from organization
-  - Can only delete account if not owner of any organization
-- **Admin**: 
-  - Can manage users (invite, remove, change roles - except owners)
-  - Can access organization settings and upload logo
-  - Cannot access billing or delete organization
-- **Member**: 
-  - Read-only access to organization data
-  - Can view team members and invitations
-  - Cannot manage users or settings
+| Permission | Owner | Admin | Member |
+|---|---|---|---|
+| View organization | Yes | Yes | Yes |
+| Update organization | Yes | Yes | No |
+| Delete organization | Yes | No | No |
+| Manage billing | Yes | No | No |
+| Invite members | Yes | Yes | No |
+| Remove members | Yes | Members only | No |
+| Change roles | Yes | No | No |
+| Transfer ownership | Yes | No | No |
 
-### Organization Rules
-- Each organization must have exactly one owner
-- Only the owner can delete the organization
-- Ownership transfer sends email notification to new owner
-- Owner cannot demote themselves (must transfer ownership first)
+## Stripe Setup (Optional)
 
-## API Routes
+1. Get API keys from Stripe dashboard
+2. Create products/prices for your plans
+3. Set up webhook at `/api/webhooks/stripe` with events:
+   - `customer.subscription.created/updated/deleted`
+   - `invoice.payment_succeeded/failed`
 
-### Authentication
-- `/api/auth/[...nextauth]` - NextAuth.js endpoints
-- `/api/auth/signup` - User registration
-- `/api/auth/get-user-orgs` - Get user organizations (for login redirect)
+## Architecture Standard
 
-### Organizations
-- `/api/organizations` - Organization CRUD operations
-- `/api/organizations/[organizationId]/logo` - Upload organization logo (POST) and delete (DELETE)
-
-### Webhooks
-- `/api/webhooks/stripe` - Stripe webhook handling
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+This project follows the [18-Factor App](https://github.com/trentas/18-factor) methodology. See `CLAUDE.md` for the full compliance table and conventions.
 
 ## License
 
-MIT License - see LICENSE file for details.
-
-## Support
-
-For questions and support:
-- Create an issue in the repository
-- Check the documentation
-- Review the example implementations
-
-## Key Features Details
-
-### User Profile & Settings
-- **Profile Management**: Update name, view email, account creation date, last login
-- **Security**: Change password with strength validation, enable/disable 2FA (mocked)
-- **Preferences**: 
-  - Theme selection (Light/Dark/System) with cross-browser persistence
-  - Language preferences (pt-BR, en-US)
-- **Account Management**: Delete account (restricted if user is owner of any organization)
-
-### Organization Settings
-- **Logo Upload**: Upload custom organization logos (PNG, JPG, GIF, SVG, WebP)
-- **Logo Display**: Logo appears in top-left corner of all tenant pages
-- **Organization Deletion**: Owner can delete organization (requires confirmation)
-- **Settings Access**: Only owners and admins can access organization settings
-
-### Audit Log (Feature Flag: `auditLog`)
-- **Visibility**: Accessible at `/[tenant]/audit-log` for organization owners and admins
-- **Contents**: Shows action, actor, target, metadata, IP address, and user agent for every mutating action in the organization
-- **Data Source**: Stored in the Supabase `audit_logs` table with RLS protections
-- **Enablement**: Toggle via `FEATURES__AUDIT_LOG=true` (and `NEXT_PUBLIC_FEATURES__AUDIT_LOG=true` if the UI should resolve it client-side)
-
-### Team Management
-- **Member Invitations**: Send email invitations to join organization
-- **Role Management**: Change member roles (owner/admin/member)
-- **Member Removal**: Remove members (with restrictions based on role)
-- **Ownership Transfer**: Owner can transfer ownership to another member
-- **Email Notifications**: Automatic emails for invitations and ownership transfers
-
-## Roadmap
-
-- ✅ **Email invitation system** - Team member invitations with email verification
-- ✅ **User Profile & Settings** - Complete profile management with 2FA, theme, and preferences
-- ✅ **Organization Management** - Logo upload, settings, and organization deletion
-- ✅ **Theme Persistence** - Theme preference saved across sessions and browsers
-- ✅ **Ownership Transfer** - Transfer organization ownership with email notifications
-- [ ] Advanced analytics dashboard
-- [ ] API documentation
-- [ ] Advanced billing features (usage limits, plan management)
-- [ ] Mobile app support
-- [ ] White-label customization
-- [ ] Organization export/import
+MIT License
