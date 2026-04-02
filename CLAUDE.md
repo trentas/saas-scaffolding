@@ -103,8 +103,14 @@ Factor 4 defines three categories:
 3. **AI Context** (versioned files) — model selection, inference params, safety thresholds → will live in versioned YAML when AI features are added
 
 - Import `env` from `@/lib/env` instead of using `process.env` directly
+- For `NEXT_PUBLIC_*` in client components, import from `@/lib/constants` (centralizes build-time inlined vars)
 - **When adding a new env var:** add it to the schema in `lib/env.ts` (required or optional with default)
 - App fails fast on startup if required vars are missing
+- **Documented exceptions** (cannot use `env` import):
+  - `lib/debug.ts` — circular dependency (it IS the logger that `env.ts` would need)
+  - `lib/env.ts` — defines the `env` object itself
+  - `lib/features/index.ts` — dynamic `Object.entries(process.env)` scan for `FEATURES__*` keys not in schema
+  - `lib/constants.ts` — centralizes `NEXT_PUBLIC_*` for client-side use (Next.js inlines at build time)
 
 ### Health Check (Factor 9)
 - `GET /api/health` — public, no auth, no rate limiting

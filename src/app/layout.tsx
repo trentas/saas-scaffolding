@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 
 import type { Metadata } from "next";
 
+import { APP_URL } from "@/lib/constants";
 import { Footer } from "@/components/blocks/footer";
 import { ConditionalNavbar } from "@/components/ConditionalNavbar";
 import { SessionProvider } from "@/components/providers/SessionProvider";
@@ -66,7 +67,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(APP_URL),
   title: {
     default: "Mainline - Modern Next.js Template",
     template: "%s | Mainline",

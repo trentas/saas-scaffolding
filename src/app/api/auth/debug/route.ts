@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/debug';
+import { env } from '@/lib/env';
 import { apiRateLimit } from '@/lib/rate-limit';
 
 /**
@@ -12,25 +13,23 @@ export async function GET(request: NextRequest) {
   if (limited) return limited;
 
   try {
-    const hasClientId = !!process.env.GOOGLE_CLIENT_ID;
-    const hasClientSecret = !!process.env.GOOGLE_CLIENT_SECRET;
-    const hasNextAuthUrl = !!process.env.NEXTAUTH_URL;
-    const hasNextAuthSecret = !!process.env.NEXTAUTH_SECRET;
+    const hasClientId = !!env.GOOGLE_CLIENT_ID;
+    const hasClientSecret = !!env.GOOGLE_CLIENT_SECRET;
 
     return NextResponse.json({
       googleOAuth: {
         configured: hasClientId && hasClientSecret,
         hasClientId,
         hasClientSecret,
-        clientIdLength: process.env.GOOGLE_CLIENT_ID?.length || 0,
-        clientSecretLength: process.env.GOOGLE_CLIENT_SECRET?.length || 0,
-        clientIdPrefix: process.env.GOOGLE_CLIENT_ID?.substring(0, 10) || 'N/A',
+        clientIdLength: env.GOOGLE_CLIENT_ID?.length || 0,
+        clientSecretLength: env.GOOGLE_CLIENT_SECRET?.length || 0,
+        clientIdPrefix: env.GOOGLE_CLIENT_ID?.substring(0, 10) || 'N/A',
       },
       nextAuth: {
-        hasUrl: hasNextAuthUrl,
-        hasSecret: hasNextAuthSecret,
-        url: process.env.NEXTAUTH_URL || 'NOT SET',
-        expectedCallbackUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/callback/google`,
+        hasUrl: !!env.NEXTAUTH_URL,
+        hasSecret: !!env.NEXTAUTH_SECRET,
+        url: env.NEXTAUTH_URL,
+        expectedCallbackUrl: `${env.NEXTAUTH_URL}/api/auth/callback/google`,
       },
     });
   } catch (error) {

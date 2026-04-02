@@ -5,26 +5,27 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { debugAuth, debugDatabase, logger, logError, RequestTimer } from './debug';
 import { getEmailDomain, isPersonalEmailDomain } from './email-domain';
+import { env } from './env';
 import { supabaseAdmin } from './supabase';
 
 // For now, let's use JWT strategy instead of database sessions
 // Database sessions require a proper adapter implementation
 
 // Check if Google OAuth is configured
-const isGoogleOAuthConfigured = !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+const isGoogleOAuthConfigured = !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET);
 
 if (isGoogleOAuthConfigured) {
   debugAuth('Google OAuth is configured', {
-    hasClientId: !!process.env.GOOGLE_CLIENT_ID,
-    hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
-    clientIdLength: process.env.GOOGLE_CLIENT_ID?.length || 0,
-    nextAuthUrl: process.env.NEXTAUTH_URL || 'NOT SET',
-    expectedCallbackUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/callback/google`,
+    hasClientId: !!env.GOOGLE_CLIENT_ID,
+    hasClientSecret: !!env.GOOGLE_CLIENT_SECRET,
+    clientIdLength: env.GOOGLE_CLIENT_ID?.length || 0,
+    nextAuthUrl: env.NEXTAUTH_URL,
+    expectedCallbackUrl: `${env.NEXTAUTH_URL}/api/auth/callback/google`,
   });
 } else {
   debugAuth('Google OAuth is NOT configured', {
-    hasClientId: !!process.env.GOOGLE_CLIENT_ID,
-    hasClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+    hasClientId: !!env.GOOGLE_CLIENT_ID,
+    hasClientSecret: !!env.GOOGLE_CLIENT_SECRET,
   });
 }
 
@@ -33,8 +34,8 @@ export const authOptions = {
     // Google OAuth Provider (optional)
     ...(isGoogleOAuthConfigured ? [
       GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        clientId: env.GOOGLE_CLIENT_ID!,
+        clientSecret: env.GOOGLE_CLIENT_SECRET!,
       })
     ] : []),
     
@@ -517,10 +518,10 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: env.NEXTAUTH_SECRET,
 
   // Enable debug mode to get more detailed error messages
-  debug: process.env.NODE_ENV === 'development',
+  debug: env.NODE_ENV === 'development',
 };
 
 // Helper functions for authentication

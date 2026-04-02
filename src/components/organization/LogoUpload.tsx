@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Upload, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { DEFAULT_LOGO_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -23,7 +24,7 @@ export function LogoUpload({ organizationId, currentLogoUrl, organizationName }:
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentLogoUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const defaultLogoUrl = process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || '/logo.svg';
+  const defaultLogoUrl = DEFAULT_LOGO_URL;
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

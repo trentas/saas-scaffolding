@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { env } from '@/lib/env';
 import { apiRateLimit } from '@/lib/rate-limit';
 
 /**
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
   if (limited) return limited;
 
   const providers: { google: boolean } = {
-    google: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+    google: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
   };
 
   return NextResponse.json({ providers });

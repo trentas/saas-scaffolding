@@ -10,6 +10,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useTenant } from './TenantProvider';
 
 
+import { DEFAULT_LOGO_URL } from '@/lib/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,7 +68,7 @@ export function TenantNavbar() {
     router.push('/setup');
   };
 
-  const defaultLogoUrl = process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || '/logo.svg';
+  const defaultLogoUrl = DEFAULT_LOGO_URL;
   const logoUrl = currentOrganization?.logo_url || defaultLogoUrl;
 
   const showOrganizationsSection = organizations.length > 0 || pathname === '/setup';

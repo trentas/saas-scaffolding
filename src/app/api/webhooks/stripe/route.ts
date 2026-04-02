@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { logger } from '@/lib/debug';
+import { env } from '@/lib/env';
 import { stripe, handleStripeWebhook } from '@/lib/stripe';
 
 export async function POST(request: NextRequest) {
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
     const event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      env.STRIPE_WEBHOOK_SECRET!
     );
 
     // Handle the webhook event

@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { FaGithub } from "react-icons/fa6";
 
+import { DEFAULT_LOGO_URL } from "@/lib/constants";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,7 +61,7 @@ export const Navbar = () => {
       <div className="flex items-center justify-between px-6 py-3">
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <Image
-            src={process.env.NEXT_PUBLIC_DEFAULT_LOGO_URL || "/logo.svg"}
+            src={DEFAULT_LOGO_URL}
             alt="logo"
             width={94}
             height={18}

@@ -17,6 +17,7 @@ import {
   disable2FASchema,
   deleteAccountSchema,
 } from "@/lib/form-schema";
+import { APP_NAME } from "@/lib/constants";
 import { supabaseAdmin } from "@/lib/supabase";
 
 // Update profile action
@@ -171,7 +172,7 @@ export const generateMFASecretAction = actionClient
       // Generate TOTP secret
       const { secret, otpauthUrl } = generateTOTPSecret(
         session.user.email,
-        process.env.NEXT_PUBLIC_APP_NAME || 'SaaS Scaffolding'
+        APP_NAME
       );
 
       // Generate QR code
