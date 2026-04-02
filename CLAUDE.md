@@ -14,29 +14,37 @@ This project follows the **18-Factor App** methodology (https://github.com/trent
 
 | Factor | Principle | Status |
 |---|---|---|
-| 1. Declarative Codebase | Everything in version control, reproducible | Implemented |
-| 2. Contract-First Interfaces | Define interfaces before implementation | Implemented — `openapi.yaml` documents all 23 routes |
-| 3. Dependency Management | Explicit, pinned, isolated deps | Implemented |
-| 4. Config, Credentials, Context | Env vars + secrets manager + structured config | Implemented — `lib/env.ts` Zod validation, fail-fast |
-| 5. Immutable Build Pipeline | Build once, deploy everywhere | Partial — CI + Docker, needs release artifacts |
+| 1. Declarative Codebase | All artifacts (code, IaC, prompts, agent tool schemas, AI context files) in version control | Implemented — includes CLAUDE.md as AI assistant context |
+| 2. Contract-First Interfaces | Define interfaces before implementation — APIs, events, MCP tools, A2A Agent Cards | Implemented — `openapi.yaml` documents all 23 REST routes |
+| 3. Dependency Management | Explicit, pinned, isolated — including AI SDKs and model deps when applicable | Implemented |
+| 4. Config, Credentials, Context | 3 categories: config (env vars), credentials (secrets manager), AI context (versioned YAML) | Implemented — `lib/env.ts` Zod validation, fail-fast. Credentials still in env vars (migrate to secrets manager for prod) |
+| 5. Immutable Build Pipeline | BUILD → EVAL → RELEASE → DEPLOY → RUN, with eval gates as CI checks | Partial — CI + Docker, needs release artifacts + eval gates |
 | 6. Evaluation-Driven Development | Statistical testing for non-deterministic systems | Partial — 84 tests, needs 70% coverage |
-| 7. Responsible AI by Design | Safety, fairness, accountability | N/A until AI features added |
-| 8. Identity, Access, Trust | Every actor has verifiable identity and scoped permissions | Implemented — auth, RBAC, 2FA, rate limit, audit |
-| 9. Disposability/Graceful Lifecycle | Fast start, graceful shutdown, health probes | Partial — health endpoint at `/api/health`, needs graceful shutdown |
-| 10. Intelligent Backing Services | Attached resources, swappable via config | Partial — Supabase/Stripe/Resend as resources |
-| 11. Environment Parity | Dev ≈ staging ≈ production | Partial — Docker + seed, needs staging config |
-| 12. Stateless Processes + Caching | Share-nothing processes, intelligent caching | Partial — stateless app, but in-memory rate limiter |
-| 13. Adaptive Concurrency | Scale each process type independently | Planned — needs K8s/scaling config |
-| 14. Full-Spectrum Observability | Structured logs, traces, metrics | Partial — structured JSON logging, needs error tracking + metrics |
+| 7. Responsible AI by Design | Safety, fairness, accountability, EU AI Act compliance | N/A until AI features added |
+| 8. Identity, Access, Trust | Every actor (human, service, AI agent) has verifiable identity and scoped permissions | Implemented — auth, RBAC, 2FA, rate limit, audit. Agent identity needed when AI features added |
+| 9. Disposability/Graceful Lifecycle | Structured startup (liveness → config → readiness), graceful shutdown, health probes | Partial — health endpoint at `/api/health`, needs graceful shutdown + structured startup |
+| 10. Intelligent Backing Services | Attached resources swappable via config — includes MCP servers, AI Gateway pattern | Partial — Supabase/Stripe/Resend as resources |
+| 11. Environment Parity | Dev ≈ staging ≈ prod, ephemeral per-branch environments for autonomous validation | Partial — Docker + seed, needs staging config |
+| 12. Stateless Processes + Caching | Share-nothing processes, semantic caching, provider-level prompt caching | Partial — stateless app, but in-memory rate limiter |
+| 13. Adaptive Concurrency | Scale each process type independently, cost-aware auto-scaling | Planned — needs K8s/scaling config |
+| 14. Full-Spectrum Observability | Structured logs, traces, metrics, AI SLOs, business observability, cost attribution | Partial — structured JSON logging, needs error tracking + metrics |
 
-**Tier 4 (Intelligence)** — Factors 15-18 apply when AI features are added (model lifecycle, prompt engineering, agent orchestration, AI economics).
+**Tier 4 (Intelligence)** — Factors 15-18 apply when AI features are added:
+- **15. Model Lifecycle Management** — model registry, version pinning, A/B testing, distillation (teacher→student for 50-80% cost savings), fine-tuning pipeline
+- **16. Prompt and Context Engineering** — prompts as versioned artifacts, context window budgets, RAG pipeline, reasoning/thinking token budgets
+- **17. Agent Orchestration and Bounded Autonomy** — agent patterns (tool-use, router, pipeline, supervisor), execution budgets, human-in-the-loop gates, Agent SDKs (Anthropic/OpenAI/Google ADK), MCP for tool discovery, A2A protocol, computer use agents
+- **18. AI Economics and Cost Architecture** — per-token cost modeling, intelligent model routing, semantic caching ROI, budget circuit breakers, cost attribution
 
 **When making changes, check:** Does this align with the 18-factor principles? Specifically:
 - New API routes → update `openapi.yaml` first (Factor 2), add rate limiting (Factor 8), use `logger` not `console` (Factor 14)
+- New interfaces → consider MCP tool schemas or A2A Agent Cards if agent-facing (Factor 2)
 - New config → add to `lib/env.ts` Zod schema, validate at startup with fail-fast (Factor 4)
+- New secrets/credentials → use a secrets manager, not env vars on disk (Factor 4)
 - New backing service → treat as attached resource, swappable via config (Factor 10)
 - New feature → add tests (Factor 6), add structured logging (Factor 14)
 - New process → stateless, disposable, health-checkable (Factors 9, 12)
+- Agent-generated changes → must pass CI gates and eval suites without human intervention (Factor 1)
+- AI features → define agent identity, bounded autonomy, execution budgets (Factors 8, 17, 18)
 
 ## Stack
 
@@ -86,9 +94,14 @@ tests/                # Vitest test files
 - **When adding or modifying an API route, update `openapi.yaml` FIRST** — define the contract before writing the implementation
 - Include: path, method, request/response schemas, auth requirements, rate limit tier
 - The spec is the source of truth for API consumers
+- Scope extends beyond REST: event schemas (AsyncAPI/CloudEvents), MCP tool schemas, A2A Agent Cards, and structured output contracts all follow contract-first
 
-### Environment Variables (Factor 4)
-- All env vars are validated via Zod schema in `lib/env.ts`
+### Configuration, Credentials, Context (Factor 4)
+Factor 4 defines three categories:
+1. **Configuration** (env vars) — model names, feature flags, non-secret settings → validated via Zod in `lib/env.ts`
+2. **Credentials** (secrets manager) — API keys, DB passwords, auth secrets → currently in env vars, should migrate to secrets manager for production
+3. **AI Context** (versioned files) — model selection, inference params, safety thresholds → will live in versioned YAML when AI features are added
+
 - Import `env` from `@/lib/env` instead of using `process.env` directly
 - **When adding a new env var:** add it to the schema in `lib/env.ts` (required or optional with default)
 - App fails fast on startup if required vars are missing
