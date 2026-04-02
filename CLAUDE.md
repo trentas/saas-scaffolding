@@ -19,10 +19,10 @@ This project follows the **18-Factor App** methodology (https://github.com/trent
 | 3. Dependency Management | Explicit, pinned, isolated — including AI SDKs and model deps when applicable | Implemented |
 | 4. Config, Credentials, Context | 3 categories: config (env vars), credentials (secrets manager), AI context (versioned YAML) | Implemented — `lib/env.ts` Zod validation, fail-fast. Credentials still in env vars (migrate to secrets manager for prod) |
 | 5. Immutable Build Pipeline | BUILD → EVAL → RELEASE → DEPLOY → RUN, with eval gates as CI checks | Partial — CI + Docker, needs release artifacts + eval gates |
-| 6. Evaluation-Driven Development | Statistical testing for non-deterministic systems | Partial — 84 tests, needs 70% coverage |
+| 6. Evaluation-Driven Development | Statistical testing for non-deterministic systems | Implemented — 183 tests, 76%+ coverage (threshold: 70%) |
 | 7. Responsible AI by Design | Safety, fairness, accountability, EU AI Act compliance | N/A until AI features added |
 | 8. Identity, Access, Trust | Every actor (human, service, AI agent) has verifiable identity and scoped permissions | Implemented — auth, RBAC, 2FA, rate limit, audit. Agent identity needed when AI features added |
-| 9. Disposability/Graceful Lifecycle | Structured startup (liveness → config → readiness), graceful shutdown, health probes | Partial — health endpoint at `/api/health`, needs graceful shutdown + structured startup |
+| 9. Disposability/Graceful Lifecycle | Structured startup (liveness → config → readiness), graceful shutdown, health probes | Implemented — health probes (liveness/readiness), graceful shutdown via `server-wrapper.js`, Docker HEALTHCHECK |
 | 10. Intelligent Backing Services | Attached resources swappable via config — includes MCP servers, AI Gateway pattern | Partial — Supabase/Stripe/Resend as resources |
 | 11. Environment Parity | Dev ≈ staging ≈ prod, ephemeral per-branch environments for autonomous validation | Partial — Docker + seed, needs staging config |
 | 12. Stateless Processes + Caching | Share-nothing processes, semantic caching, provider-level prompt caching | Partial — stateless app, but in-memory rate limiter |
@@ -114,8 +114,19 @@ Factor 4 defines three categories:
 
 ### Health Check (Factor 9)
 - `GET /api/health` — public, no auth, no rate limiting
+- Supports probe modes via `?probe=` query param:
+  - `?probe=liveness` — returns 200 if process is alive (K8s livenessProbe)
+  - `?probe=readiness` — returns 200 only if ready to serve (K8s readinessProbe); 503 during shutdown
+  - (default) — full check with backing-service connectivity
 - Returns `{ status, uptime, timestamp, checks: { supabase } }`
-- Use for Docker HEALTHCHECK, K8s probes, uptime monitoring
+- Returns 503 with `status: "shutting_down"` during graceful shutdown
+
+### Graceful Shutdown (Factor 9)
+- `scripts/server-wrapper.js` wraps the Next.js standalone server
+- Handles SIGTERM/SIGINT: stops accepting connections, drains in-flight requests, exits after 30s timeout
+- Sets `globalThis.__gracefulShutdown` flag so health endpoint returns 503
+- `lib/lifecycle.ts` exports `isShuttingDown()` / `markShuttingDown()`
+- Docker: `CMD ["node", "server-wrapper.js"]` + `HEALTHCHECK` + `stop_grace_period: 30s`
 
 ### Logging (Factor 14)
 - Use `logger` from `lib/debug.ts` — never raw `console.log/error/warn`

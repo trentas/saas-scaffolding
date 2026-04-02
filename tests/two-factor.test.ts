@@ -54,6 +54,8 @@ import {
   generateTOTPSecret,
   generateTOTPQRCode,
   verifyTOTPCode,
+  verify2FACode,
+  verifyBackupCode,
 } from '@/lib/two-factor';
 
 describe('generate2FACode', () => {
@@ -120,5 +122,20 @@ describe('verifyTOTPCode', () => {
   it('accepts custom window parameter', () => {
     const result = verifyTOTPCode('JBSWY3DPEHPK3PXP', '123456', 5);
     expect(result).toBe(true);
+  });
+
+});
+
+describe('verify2FACode', () => {
+  it('returns false when no stored code found', async () => {
+    const result = await verify2FACode('user-1', '123456');
+    expect(result).toBe(false);
+  });
+});
+
+describe('verifyBackupCode', () => {
+  it('returns false when user has no backup codes', async () => {
+    const result = await verifyBackupCode('user-1', 'ABCDEF');
+    expect(result).toBe(false);
   });
 });
