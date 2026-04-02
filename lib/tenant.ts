@@ -165,8 +165,7 @@ export async function getUserOrganizations(userId: string) {
       role: member.role,
     })) || [];
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error getting user organizations:', error);
+    logError(error, 'getUserOrganizations');
     return [];
   }
 }

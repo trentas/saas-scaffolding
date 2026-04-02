@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next';
 
 import { fetchAuditLogsForOrganization } from '@/lib/audit-log-service';
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/debug';
 import { isServerFeatureEnabled } from '@/lib/features/server';
 import { getUserOrganizationContext } from '@/lib/microservice-auth';
 import { apiRateLimit } from '@/lib/rate-limit';
@@ -73,6 +74,10 @@ export async function GET(
       normalizedMessage.includes('not found') ? 404 :
       normalizedMessage.includes('not in organization') ? 403 :
       500;
+
+    if (status === 500) {
+      logger.error('Audit logs route error', { error });
+    }
 
     return NextResponse.json({ message }, { status });
   }

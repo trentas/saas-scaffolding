@@ -94,8 +94,7 @@ export const authOptions = {
               image: user.avatar_url,
             };
           } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Login token auth error:', error);
+            logError(error, 'Login token auth');
             throw error;
           }
         }
@@ -176,8 +175,7 @@ export const authOptions = {
             throw new Error(`Requires2FA:email:${user.id}:${user.email}`);
           }
         } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Auth error:', error);
+          logError(error, 'authorize');
           throw error;
         }
       }
@@ -220,8 +218,7 @@ export const authOptions = {
 
         return `${baseUrl}${postLoginPath}`;
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error("Redirect callback error:", error);
+        logError(error, 'redirect callback');
         return `${baseUrl}/auth/post-login`;
       }
     },
@@ -375,8 +372,7 @@ export const authOptions = {
         
         return token;
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('Sign in error:', error);
+        logError(error, 'jwt callback');
         return false;
       }
     },
@@ -712,8 +708,7 @@ export async function verifyEmailToken(token: string) {
 
     return { success: true, user };
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error verifying email:', error);
+    logError(error, 'verifyEmailToken');
     return { success: false, message: 'Verification failed' };
   }
 }
@@ -747,8 +742,7 @@ export async function createPasswordResetToken(email: string) {
 
     return { success: true, token: resetToken, user };
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error creating reset token:', error);
+    logError(error, 'createPasswordResetToken');
     return { success: false, message: 'Failed to create reset token' };
   }
 }
@@ -790,8 +784,7 @@ export async function resetPassword(token: string, newPassword: string) {
 
     return { success: true };
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error resetting password:', error);
+    logError(error, 'resetPassword');
     return { success: false, message: 'Password reset failed' };
   }
 }
@@ -837,8 +830,7 @@ export async function createOrganization(userId: string, name: string, slug: str
 
     return organization;
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error creating organization:', error);
+    logError(error, 'createOrganization');
     throw error;
   }
 }

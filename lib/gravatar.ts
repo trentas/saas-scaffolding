@@ -1,5 +1,4 @@
- 
-const md5 = require('md5');
+import md5 from 'md5';
 
 /**
  * Generate MD5 hash from email (required for Gravatar)

@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import QRCode from 'qrcode';
 import speakeasy from 'speakeasy';
 
+import { logger } from './debug';
 import { supabaseAdmin } from './supabase';
 
 export function generate2FACode(): string {
@@ -48,8 +49,7 @@ export async function verify2FACode(userId: string, code: string): Promise<boole
 
     return isValid;
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('2FA verification error:', error);
+    logger.error('2FA verification error', { error });
     return false;
   }
 }
@@ -89,8 +89,7 @@ export async function generateTOTPQRCode(otpauthUrl: string): Promise<string> {
     const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl);
     return qrCodeDataUrl;
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error generating QR code:', error);
+    logger.error('Error generating QR code', { error });
     throw new Error('Failed to generate QR code');
   }
 }
@@ -107,8 +106,7 @@ export function verifyTOTPCode(secret: string, code: string, window: number = 2)
       window, // Allow codes within ±2 time windows (60 seconds total)
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error verifying TOTP code:', error);
+    logger.error('Error verifying TOTP code', { error });
     return false;
   }
 }
@@ -144,8 +142,7 @@ export async function verifyBackupCode(userId: string, code: string): Promise<bo
 
     return true;
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error verifying backup code:', error);
+    logger.error('Error verifying backup code', { error });
     return false;
   }
 }
