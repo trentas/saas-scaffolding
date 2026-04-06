@@ -9,13 +9,16 @@ import { authRateLimit } from '@/lib/rate-limit';
 const handler = NextAuth(authOptions);
 
 // Wrap handlers to add logging
+// NextAuth v4 expects synchronous params.nextauth but Next.js 16 makes params a Promise.
+// We must await params and pass the resolved value so NextAuth can route correctly.
 async function wrappedHandler(req: NextRequest, context: { params: Promise<{ nextauth: string[] }> }) {
   const limited = authRateLimit(req);
   if (limited) return limited;
 
+  const resolvedParams = await context.params;
   const pathname = req.nextUrl.pathname;
   const searchParams = req.nextUrl.searchParams;
-  
+
   // Log OAuth signin attempts
   if (pathname.includes('/signin/google')) {
     const callbackUrl = searchParams.get('callbackUrl');
@@ -27,7 +30,7 @@ async function wrappedHandler(req: NextRequest, context: { params: Promise<{ nex
       userAgent: req.headers.get('user-agent')?.substring(0, 50),
     });
   }
-  
+
   // Log callback attempts
   if (pathname.includes('/callback/google')) {
     const error = searchParams.get('error');
@@ -40,10 +43,10 @@ async function wrappedHandler(req: NextRequest, context: { params: Promise<{ nex
       fullUrl: req.nextUrl.toString(),
     });
   }
-  
+
   try {
-    const response = await handler(req, context);
-    
+    const response = await handler(req, { params: resolvedParams });
+
     // Log response if it's a redirect with error
     if (response instanceof Response) {
       const location = response.headers.get('location');
@@ -55,7 +58,7 @@ async function wrappedHandler(req: NextRequest, context: { params: Promise<{ nex
         });
       }
     }
-    
+
     return response;
   } catch (error: unknown) {
     logger.error('NextAuth handler exception', {

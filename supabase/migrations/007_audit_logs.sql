@@ -1,6 +1,6 @@
 -- Create audit_logs table to capture organization activity
 CREATE TABLE audit_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     actor_id UUID REFERENCES users(id) ON DELETE SET NULL,
     action TEXT NOT NULL,

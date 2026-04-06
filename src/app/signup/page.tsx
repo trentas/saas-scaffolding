@@ -26,7 +26,7 @@ const Signup = () => {
 
   // Check available auth providers
   useEffect(() => {
-    fetch('/api/auth/providers')
+    fetch('/api/auth/available-providers')
       .then((res) => res.json())
       .then((data) => {
         setGoogleEnabled(data.providers?.google || false);

@@ -163,12 +163,13 @@ describe('authorize', () => {
     await expect(authorize({ email: 'a@b.com', password: 'pass' })).rejects.toThrow('Requires2FA:totp:u1:a@b.com');
   });
 
-  it('throws Requires2FA:email when MFA not enabled', async () => {
+  it('returns user when MFA not enabled', async () => {
     if (!authorize) return;
     singleResults = [
-      { data: { id: 'u1', email: 'a@b.com', name: 'User', locked_until: null, email_verified: true, password_hash: 'h', failed_login_attempts: 0, mfa_enabled: false, mfa_secret: null }, error: null },
+      { data: { id: 'u1', email: 'a@b.com', name: 'User', avatar_url: null, locked_until: null, email_verified: true, password_hash: 'h', failed_login_attempts: 0, mfa_enabled: false, mfa_secret: null }, error: null },
     ];
-    await expect(authorize({ email: 'a@b.com', password: 'pass' })).rejects.toThrow('Requires2FA:email:u1:a@b.com');
+    const result = await authorize({ email: 'a@b.com', password: 'pass' });
+    expect(result).toEqual({ id: 'u1', email: 'a@b.com', name: 'User', image: null });
   });
 
   it('authenticates via login token', async () => {

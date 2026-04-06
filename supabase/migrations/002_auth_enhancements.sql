@@ -18,7 +18,7 @@ CREATE INDEX idx_users_password_reset_token ON users(password_reset_token);
 
 -- Create sessions table for NextAuth database sessions
 CREATE TABLE sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_token TEXT UNIQUE NOT NULL,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     expires TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -31,7 +31,7 @@ CREATE INDEX idx_sessions_user_id ON sessions(user_id);
 
 -- Create two_factor_codes table for 2FA codes
 CREATE TABLE two_factor_codes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     code TEXT NOT NULL,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,

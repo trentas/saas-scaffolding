@@ -1057,7 +1057,7 @@ paths:
   # ──────────────────────────────────────────────
   # Auth - Providers
   # ──────────────────────────────────────────────
-  /api/auth/providers:
+  /api/auth/available-providers:
     get:
       operationId: getProviders
       summary: List available auth providers

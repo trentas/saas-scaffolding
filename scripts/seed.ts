@@ -14,6 +14,7 @@
  *   from .env.local (loaded automatically via --env-file).
  */
 
+import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 
@@ -21,6 +22,7 @@ import { randomUUID } from 'crypto';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const DEMO_PASSWORD = 'password123';
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
   console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
@@ -32,14 +34,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // --- Seed data ---
 
-const DEMO_USER = {
-  id: randomUUID(),
-  email: 'demo@example.com',
-  name: 'Demo User',
-  password_hash: '$2b$10$K7L1OJ45/4Y2nIvhRVpCe.FSmhDdWoXehVzJptJ/op0lSsvqNu/1u', // "password123"
-  email_verified: true,
-};
-
 const DEMO_ORG = {
   id: randomUUID(),
   name: 'Demo Organization',
@@ -50,21 +44,34 @@ const DEMO_ORG = {
 // --- Helpers ---
 
 async function upsertUser() {
+  const password_hash = await bcrypt.hash(DEMO_PASSWORD, 10);
+
   const { data: existing } = await supabase
     .from('users')
     .select('id')
-    .eq('email', DEMO_USER.email)
+    .eq('email', 'demo@example.com')
     .single();
 
   if (existing) {
-    console.log(`  User "${DEMO_USER.email}" already exists, skipping.`);
+    await supabase
+      .from('users')
+      .update({ password_hash, email_verified: true })
+      .eq('id', existing.id);
+    console.log('  User "demo@example.com" already exists, updated password.');
     return existing.id;
   }
 
-  const { error } = await supabase.from('users').insert(DEMO_USER);
+  const id = randomUUID();
+  const { error } = await supabase.from('users').insert({
+    id,
+    email: 'demo@example.com',
+    name: 'Demo User',
+    password_hash,
+    email_verified: true,
+  });
   if (error) throw new Error(`Failed to create user: ${error.message}`);
-  console.log(`  Created user "${DEMO_USER.email}"`);
-  return DEMO_USER.id;
+  console.log('  Created user "demo@example.com"');
+  return id;
 }
 
 async function upsertOrganization() {
@@ -118,8 +125,8 @@ async function seed() {
   await upsertMembership(userId, orgId);
 
   console.log('\nDone! You can now sign in with:');
-  console.log(`  Email:    ${DEMO_USER.email}`);
-  console.log('  Password: password123');
+  console.log('  Email:    demo@example.com');
+  console.log(`  Password: ${DEMO_PASSWORD}`);
   console.log(`  Org URL:  http://localhost:3000/${DEMO_ORG.slug}/dashboard\n`);
 }
 

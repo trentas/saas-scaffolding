@@ -163,18 +163,20 @@ export const authOptions = {
           if (user.mfa_enabled && user.mfa_secret) {
             // User has 2FA enabled - require TOTP verification
             throw new Error(`Requires2FA:totp:${user.id}:${user.email}`);
-          } else {
-            // User doesn't have 2FA - require Email OTP
-            // Generate and send email OTP code
-            const { generate2FACode, store2FACode } = await import('./two-factor');
-            const { send2FACodeEmail } = await import('./email');
-            
-            const code = generate2FACode();
-            await store2FACode(user.id, code);
-            await send2FACodeEmail(user.email, code, user.name || 'User');
-            
-            throw new Error(`Requires2FA:email:${user.id}:${user.email}`);
           }
+
+          // Update last login timestamp
+          await supabaseAdmin
+            .from('users')
+            .update({ last_login_at: new Date().toISOString() })
+            .eq('id', user.id);
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.avatar_url,
+          };
         } catch (error) {
           logError(error, 'authorize');
           throw error;

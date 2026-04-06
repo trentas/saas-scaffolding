@@ -1,9 +1,6 @@
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- Create organizations table
 CREATE TABLE organizations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
     plan TEXT DEFAULT 'free' CHECK (plan IN ('free', 'pro', 'enterprise')),
@@ -15,7 +12,7 @@ CREATE TABLE organizations (
 
 -- Create users table
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
     name TEXT,
     avatar_url TEXT,
@@ -25,7 +22,7 @@ CREATE TABLE users (
 
 -- Create organization_members table
 CREATE TABLE organization_members (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
@@ -38,7 +35,7 @@ CREATE TABLE organization_members (
 
 -- Create invitations table
 CREATE TABLE invitations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT NOT NULL,
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
@@ -50,7 +47,7 @@ CREATE TABLE invitations (
 
 -- Create subscriptions table (for Stripe integration)
 CREATE TABLE subscriptions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     stripe_subscription_id TEXT UNIQUE NOT NULL,
     status TEXT NOT NULL,
