@@ -10,7 +10,6 @@ import { useSession, signOut } from 'next-auth/react';
 import { useTenant } from './TenantProvider';
 
 
-import { DEFAULT_LOGO_URL } from '@/lib/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getUserAvatarUrl } from '@/lib/avatar';
+import { DEFAULT_LOGO_URL } from '@/lib/constants';
 
 type SessionOrganization = {
   id: string;

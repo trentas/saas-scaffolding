@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth/next";
 import { actionClient } from "./safe-action";
 
 import { authOptions } from "@/lib/auth";
+import { APP_NAME } from "@/lib/constants";
 import { debugDatabase, logError } from "@/lib/debug";
 import {
   updateProfileSchema,
@@ -17,7 +18,6 @@ import {
   disable2FASchema,
   deleteAccountSchema,
 } from "@/lib/form-schema";
-import { APP_NAME } from "@/lib/constants";
 import { supabaseAdmin } from "@/lib/supabase";
 
 // Update profile action

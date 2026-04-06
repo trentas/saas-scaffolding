@@ -3,13 +3,13 @@ import localFont from "next/font/local";
 
 import type { Metadata } from "next";
 
-import { APP_URL } from "@/lib/constants";
 import { Footer } from "@/components/blocks/footer";
 import { ConditionalNavbar } from "@/components/ConditionalNavbar";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import { StyleGlideProvider } from "@/components/styleglide-provider";
 import { ThemeInitializer } from "@/components/theme-initializer";
 import { ThemeProvider } from "@/components/theme-provider";
+import { APP_URL } from "@/lib/constants";
 import { FeatureFlagsProvider } from "@/lib/features/client";
 import { getServerFeatureFlags } from "@/lib/features/server";
 import "@/styles/globals.css";

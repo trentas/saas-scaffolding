@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { createPasswordResetToken } from '@/lib/auth';
 import { logger } from '@/lib/debug';
+import { sendPasswordResetEmail } from '@/lib/email';
 import { strictAuthRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
@@ -27,7 +28,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await createPasswordResetToken(email);
+    const result = await createPasswordResetToken(email);
+
+    if (result.success && result.token && result.user) {
+      try {
+        await sendPasswordResetEmail(email, result.token, result.user.name);
+      } catch {
+        logger.error('Failed to send password reset email', { email });
+      }
+    }
 
     // Always return success for security (don't reveal if email exists)
     return NextResponse.json(

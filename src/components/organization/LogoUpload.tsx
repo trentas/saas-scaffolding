@@ -7,10 +7,10 @@ import Image from 'next/image';
 import { Upload, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { DEFAULT_LOGO_URL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/useTranslation';
+import { DEFAULT_LOGO_URL } from '@/lib/constants';
 
 interface LogoUploadProps {
   organizationId: string;

@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // --- Supabase mock ---
@@ -77,7 +78,6 @@ vi.mock('@/lib/email', () => ({
 }));
 
 import { authOptions } from '@/lib/auth';
-import bcrypt from 'bcryptjs';
 
 beforeEach(() => {
   vi.clearAllMocks();

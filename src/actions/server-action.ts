@@ -1,8 +1,8 @@
 "use server";
 import { actionClient } from "./safe-action";
 
-import { formSchema } from "@/lib/form-schema";
 import { logger } from "@/lib/debug";
+import { formSchema } from "@/lib/form-schema";
 
 export const serverAction = actionClient
   .inputSchema(formSchema)
