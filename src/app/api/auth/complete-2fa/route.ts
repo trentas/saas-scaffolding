@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // Get user from database
     const { data: user, error: userError } = await supabaseAdmin
       .from('users')
-      .select('*')
+      .select('id, locked_until, mfa_secret, failed_login_attempts, email, name, avatar_url')
       .eq('id', userId)
       .single();
 

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     // Check if user exists and is not already verified
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('*')
+      .select('id, email_verified, name')
       .eq('email', email)
       .single();
 
