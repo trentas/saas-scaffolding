@@ -9,7 +9,6 @@ import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { FaGithub } from "react-icons/fa6";
 
-import { DEFAULT_LOGO_URL } from "@/lib/constants";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +19,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { DEFAULT_LOGO_URL } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
@@ -122,7 +122,7 @@ export const Navbar = () => {
         {/* Auth Buttons */}
         <div className="flex items-center gap-2.5">
           <ThemeToggle />
-          <Link href="/login" className="max-lg:hidden">
+          <Link href="/auth/signin" className="max-lg:hidden">
             <Button variant="outline">
               <span className="relative z-10">Login</span>
             </Button>
