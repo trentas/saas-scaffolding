@@ -1,6 +1,6 @@
 # SaaS Multi-Tenant Scaffolding
 
-A production-ready multi-tenant SaaS scaffolding built with Next.js 16, Supabase, Stripe, and shadcn/ui. Follows the [18-Factor App](https://github.com/trentas/18-factor) methodology.
+A production-ready multi-tenant SaaS scaffolding built with Next.js 16, Supabase, Stripe, and shadcn/ui. Follows the [20-Factor App](https://github.com/trentas/20-factor) methodology.
 
 ## Features
 
@@ -297,7 +297,7 @@ Exceptions: Stripe webhook (signature verification), health check (public).
 
 ## Architecture Standard
 
-This project follows the [18-Factor App](https://github.com/trentas/18-factor) methodology. See `CLAUDE.md` for the full compliance table and conventions.
+This project follows the [20-Factor App](https://github.com/trentas/20-factor) methodology. See `CLAUDE.md` for the full compliance table and conventions.
 
 ## License
 

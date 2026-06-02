@@ -6,9 +6,11 @@ Project context for Claude Code. This file is loaded automatically.
 
 SaaS scaffolding template — multi-tenant Next.js app with auth, billing, RBAC, and team management. Used as a starting point for new SaaS projects.
 
-## Architecture Standard: 18-Factor App
+## Architecture Standard: 20-Factor App
 
-This project follows the **18-Factor App** methodology (https://github.com/trentas/18-factor), a modern evolution of the 12-Factor App for the AI era. All architectural decisions, new features, and refactors must align with these factors.
+This project follows the **20-Factor App** methodology (https://github.com/trentas/20-factor), a modern evolution of the 12-Factor App for the AI era. All architectural decisions, new features, and refactors must align with these factors.
+
+> **Migration note:** This project previously tracked the 18-Factor App. The 20-Factor methodology adds two factors — **#13 Durable Agent Runtime** (Tier 3) and **#19 Agent Memory Architecture** (Tier 4) — which renumbers the later factors. Mapping from the old numbering: 18F #13→#14 (Adaptive Concurrency), 18F #14→#15 (Observability), 18F #15→#16 (Model Lifecycle), 18F #16→#17 (Prompt/Context), 18F #17→#18 (Agent Orchestration), 18F #18→#20 (AI Economics).
 
 **Applicable factors (Tiers 1-3):**
 
@@ -26,25 +28,27 @@ This project follows the **18-Factor App** methodology (https://github.com/trent
 | 10. Intelligent Backing Services | Attached resources swappable via config — includes MCP servers, AI Gateway pattern | Partial — Supabase/Stripe/Resend as resources |
 | 11. Environment Parity | Dev ≈ staging ≈ prod, ephemeral per-branch environments for autonomous validation | Partial — Docker + seed, needs staging config |
 | 12. Stateless Processes + Caching | Share-nothing processes, semantic caching, provider-level prompt caching | Partial — stateless app, but in-memory rate limiter |
-| 13. Adaptive Concurrency | Scale each process type independently, cost-aware auto-scaling | Planned — needs K8s/scaling config |
-| 14. Full-Spectrum Observability | Structured logs, traces, metrics, AI SLOs, business observability, cost attribution | Partial — structured JSON logging, needs error tracking + metrics |
+| 13. Durable Agent Runtime | Persist long-running agent state — journaling, idempotent tool calls, durable HITL interrupts (Temporal/Restate/Inngest/agent SDKs) | N/A until AI agents added — workers stay stateless (Factor 12); this governs durable agent workflow state |
+| 14. Adaptive Concurrency | Scale each process type independently, cost-aware auto-scaling | Planned — needs K8s/scaling config |
+| 15. Full-Spectrum Observability | Structured logs, traces, metrics, AI SLOs, business observability, cost attribution | Partial — structured JSON logging, needs error tracking + metrics |
 
-**Tier 4 (Intelligence)** — Factors 15-18 apply when AI features are added:
-- **15. Model Lifecycle Management** — model registry, version pinning, A/B testing, distillation (teacher→student for 50-80% cost savings), fine-tuning pipeline
-- **16. Prompt and Context Engineering** — prompts as versioned artifacts, context window budgets, RAG pipeline, reasoning/thinking token budgets
-- **17. Agent Orchestration and Bounded Autonomy** — agent patterns (tool-use, router, pipeline, supervisor), execution budgets, human-in-the-loop gates, Agent SDKs (Anthropic/OpenAI/Google ADK), MCP for tool discovery, A2A protocol, computer use agents
-- **18. AI Economics and Cost Architecture** — per-token cost modeling, intelligent model routing, semantic caching ROI, budget circuit breakers, cost attribution
+**Tier 4 (Intelligence)** — Factors 16-20 apply when AI features are added:
+- **16. Model Lifecycle Management** — model registry, version pinning, A/B testing, distillation (teacher→student for 50-80% cost savings), fine-tuning pipeline
+- **17. Prompt and Context Engineering** — prompts as versioned artifacts, context window budgets, RAG pipeline, reasoning/thinking token budgets
+- **18. Agent Orchestration and Bounded Autonomy** — agent patterns (tool-use, router, pipeline, supervisor), execution budgets, human-in-the-loop gates, Agent SDKs (Anthropic/OpenAI/Google ADK), MCP for tool discovery, A2A protocol, computer use agents
+- **19. Agent Memory Architecture** — vector/graph/episodic memory layers, identity-bound scoping (no cross-tenant recall), decay/summarization, right-to-erasure (GDPR/LGPD), poisoning defenses, provenance/audit. Distinct from cache (Factor 12) and RAG (Factor 17)
+- **20. AI Economics and Cost Architecture** — per-token cost modeling, intelligent model routing, semantic caching ROI, budget circuit breakers, cost attribution
 
-**When making changes, check:** Does this align with the 18-factor principles? Specifically:
-- New API routes → update `openapi.yaml` first (Factor 2), add rate limiting (Factor 8), use `logger` not `console` (Factor 14)
+**When making changes, check:** Does this align with the 20-factor principles? Specifically:
+- New API routes → update `openapi.yaml` first (Factor 2), add rate limiting (Factor 8), use `logger` not `console` (Factor 15)
 - New interfaces → consider MCP tool schemas or A2A Agent Cards if agent-facing (Factor 2)
 - New config → add to `lib/env.ts` Zod schema, validate at startup with fail-fast (Factor 4)
 - New secrets/credentials → use a secrets manager, not env vars on disk (Factor 4)
 - New backing service → treat as attached resource, swappable via config (Factor 10)
-- New feature → add tests (Factor 6), add structured logging (Factor 14)
+- New feature → add tests (Factor 6), add structured logging (Factor 15)
 - New process → stateless, disposable, health-checkable (Factors 9, 12)
 - Agent-generated changes → must pass CI gates and eval suites without human intervention (Factor 1)
-- AI features → define agent identity, bounded autonomy, execution budgets (Factors 8, 17, 18)
+- AI features → define agent identity, bounded autonomy, execution budgets (Factors 8, 18); persist long-running agent state durably (Factor 13); scope agent memory to identity with right-to-erasure (Factor 19)
 
 ## Stack
 
