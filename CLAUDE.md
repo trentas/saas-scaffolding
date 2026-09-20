@@ -226,6 +226,15 @@ GitHub Actions pipeline (`.github/workflows/ci.yml`) runs on push/PR to main:
 4. **Build** — `next build` (runs after lint + typecheck + test pass)
 5. **Security Audit** — `npm audit --audit-level=high`
 
+### Dependency Updates (Factor 3)
+
+- `.github/dependabot.yml` covers **npm**, **github-actions** and **docker**, weekly
+- Patch/minor updates arrive **grouped** (next+react, radix, supabase, dev tooling, types, catch-all); majors get their own PR
+- `cooldown` delays version bumps 3-10 days after publication (supply-chain hygiene); security updates bypass it
+- `next-auth` major updates are ignored on purpose — staying on v4 until Auth.js v5 is stable
+- Dependabot alerts + security updates and secret scanning with push protection are enabled on the repo
+- **A Docker major bump must also update `NODE_VERSION` in `ci.yml`** — Dependabot only sees the Dockerfile
+
 ## Docker
 
 ```bash
