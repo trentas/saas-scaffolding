@@ -28,11 +28,9 @@ function AcceptInvitePageContent() {
   const token = searchParams.get('token');
 
   useEffect(() => {
+    // A missing token is handled by the `if (!token)` render guard below, which
+    // shows a dedicated "Invalid Invitation" card, so there is no state to set.
     if (!token) {
-      setResult({
-        success: false,
-        message: 'Invalid invitation link. No token provided.'
-      });
       return;
     }
 
@@ -47,50 +45,58 @@ function AcceptInvitePageContent() {
     }
 
     // User is logged in, process the invitation
-    if (status === 'authenticated' && session?.user) {
-      processInvitation();
+    if (status !== 'authenticated' || !session?.user) {
+      return;
     }
-  }, [token, status, session, router]);
 
-  const processInvitation = async () => {
-    if (!token) return;
+    // Kept inside an async closure so the state updates happen when the action
+    // resolves rather than synchronously while the effect is running.
+    let cancelled = false;
 
-    setIsProcessing(true);
-    try {
-      const result = await acceptInvitationAction({ token });
-      
-      if (result?.data?.success) {
-        setResult({
-          success: true,
-          message: result.data.message,
-          organizationSlug: result.data.organizationSlug
-        });
-        
-        // Redirect to organization dashboard after 2 seconds
-        setTimeout(() => {
-          const organizationSlug = result.data?.organizationSlug;
-          if (organizationSlug) {
-            router.push(`/${organizationSlug}/dashboard`);
-          } else {
-            router.push('/dashboard');
-          }
-        }, 2000);
-      } else {
+    void (async () => {
+      setIsProcessing(true);
+      try {
+        const result = await acceptInvitationAction({ token });
+        if (cancelled) return;
+
+        if (result?.data?.success) {
+          setResult({
+            success: true,
+            message: result.data.message,
+            organizationSlug: result.data.organizationSlug
+          });
+
+          // Redirect to organization dashboard after 2 seconds
+          setTimeout(() => {
+            const organizationSlug = result.data?.organizationSlug;
+            if (organizationSlug) {
+              router.push(`/${organizationSlug}/dashboard`);
+            } else {
+              router.push('/dashboard');
+            }
+          }, 2000);
+        } else {
+          setResult({
+            success: false,
+            message: result?.data?.message || 'Failed to accept invitation'
+          });
+        }
+      } catch (error) {
+        if (cancelled) return;
+        console.error('Error accepting invitation:', error);
         setResult({
           success: false,
-          message: result?.data?.message || 'Failed to accept invitation'
+          message: error instanceof Error ? error.message : 'An unexpected error occurred'
         });
+      } finally {
+        if (!cancelled) setIsProcessing(false);
       }
-    } catch (error) {
-      console.error('Error accepting invitation:', error);
-      setResult({
-        success: false,
-        message: error instanceof Error ? error.message : 'An unexpected error occurred'
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, status, session, router]);
 
   const handleSignIn = () => {
     if (token) {

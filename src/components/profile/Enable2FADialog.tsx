@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ShieldCheck, Loader2, QrCode, Copy, Download } from 'lucide-react';
@@ -59,24 +59,8 @@ export function Enable2FADialog({ children }: Enable2FADialogProps) {
     },
   });
 
-  useEffect(() => {
-    if (open && step === 'qrcode' && !mfaData) {
-      generateSecret();
-    }
-    // Reset step when dialog opens
-    if (open && step !== 'qrcode') {
-      setStep('qrcode');
-    }
-  }, [open]);
-
-  // Update form secret when mfaData is available
-  useEffect(() => {
-    if (mfaData?.secret) {
-      form.setValue('secret', mfaData.secret);
-    }
-  }, [mfaData, form]);
-
-  const generateSecret = async () => {
+  // Declared ahead of the effect that calls it.
+  const generateSecret = useCallback(async () => {
     setIsLoading(true);
     try {
       const result = await generateMFASecretAction();
@@ -95,7 +79,24 @@ export function Enable2FADialog({ children }: Enable2FADialogProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (open && step === 'qrcode' && !mfaData) {
+      void (async () => {
+        await generateSecret();
+      })();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  // Update form secret when mfaData is available
+  useEffect(() => {
+    if (mfaData?.secret) {
+      form.setValue('secret', mfaData.secret);
+    }
+  }, [mfaData, form]);
 
   const onSubmit = async (data: Enable2FAData) => {
     if (!mfaData?.secret) {
@@ -162,6 +163,9 @@ export function Enable2FADialog({ children }: Enable2FADialogProps) {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => {
       if (isOpen) {
+        // Opening is an event, so the step reset belongs here rather than in
+        // an effect reacting to `open` after the fact.
+        setStep('qrcode');
         setOpen(true);
       } else {
         handleClose();

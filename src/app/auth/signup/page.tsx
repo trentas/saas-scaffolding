@@ -28,11 +28,13 @@ function SignUpContent() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [googleEnabled, setGoogleEnabled] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteToken = searchParams.get('invite');
+  // Arriving from an invitation is known at first render, so the notice is
+  // seeded here rather than written back by an effect.
+  const [success, setSuccess] = useState(inviteToken ? t('auth.signup.inviteMessage') : '');
 
   // Check available auth providers
   useEffect(() => {
@@ -46,15 +48,6 @@ function SignUpContent() {
         setGoogleEnabled(false);
       });
   }, []);
-
-  // Pre-fill email if coming from invitation
-  useEffect(() => {
-    if (inviteToken) {
-      // We could fetch invitation details to pre-fill email, but for now we'll just show a message
-      setSuccess(t('auth.signup.inviteMessage'));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inviteToken]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

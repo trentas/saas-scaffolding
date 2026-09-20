@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { 
   User, 
@@ -59,11 +59,9 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
+  // Declared before the effect that runs it, and memoised so it can also be
+  // reused by handleSaveName without re-triggering the effect.
+  const loadProfile = useCallback(async () => {
     try {
       const result = await getUserProfileAction();
       if (result?.data?.success && result.data.data) {
@@ -76,7 +74,14 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    void (async () => {
+      await loadProfile();
+    })();
+  }, [loadProfile]);
 
   const handleSaveName = async () => {
     if (!name.trim() || name === profileData?.name) {

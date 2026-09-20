@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState } from 'react';
 
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -17,21 +17,13 @@ function ResetPasswordContent() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const tokenParam = searchParams.get('token');
-    if (!tokenParam) {
-      setMessage(t('auth.resetPassword.invalidToken'));
-      return;
-    }
-    setToken(tokenParam);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  // Read straight from the URL: the token never changes while this form is
+  // mounted, so holding it in state only created an extra render pass.
+  const token = searchParams.get('token');
+  const [message, setMessage] = useState(token ? '' : t('auth.resetPassword.invalidToken'));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
