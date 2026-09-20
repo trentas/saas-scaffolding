@@ -35,7 +35,6 @@ updates:
     commit-message:
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
-      include: scope
     cooldown:
       default-days: 5
       semver-patch-days: 3
@@ -144,7 +143,6 @@ updates:
       - github-actions
     commit-message:
       prefix: "chore(ci)"
-      include: scope
     cooldown:
       default-days: 5
     groups:
@@ -172,9 +170,16 @@ updates:
       - docker
     commit-message:
       prefix: "chore(docker)"
-      include: scope
     cooldown:
       default-days: 7
+    ignore:
+      # Node majors are handled by hand. Two reasons Dependabot can't get this
+      # right on its own: it only sees the Dockerfile, so it would leave
+      # NODE_VERSION in ci.yml behind; and it has no notion of LTS, so it
+      # happily proposes odd-numbered (non-LTS) releases like node:25.
+      - dependency-name: "node"
+        update-types:
+          - "version-update:semver-major"
 
   # ─────────────────────────────────────────────────────────────────────────
   # pip — Python helper scripts (scripts/requirements-test.txt)
@@ -194,7 +199,6 @@ updates:
       - python
     commit-message:
       prefix: "chore(deps)"
-      include: scope
     cooldown:
       default-days: 5
     groups:
