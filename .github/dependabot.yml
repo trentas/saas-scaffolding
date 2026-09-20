@@ -1,0 +1,177 @@
+# Dependabot — automated dependency updates (Factor 3: Dependency Management)
+#
+# Strategy:
+#   - Patch/minor updates are GROUPED into a few themed PRs per week, so the
+#     queue stays reviewable instead of becoming one PR per package.
+#   - Major updates are deliberately left UNGROUPED: each one gets its own PR
+#     so breaking changes are reviewed in isolation.
+#   - Security updates bypass the cooldown and land in a single fast-track PR.
+#   - `cooldown` delays version bumps for a few days after publication, which
+#     blunts the "compromised package published minutes ago" supply-chain case.
+#
+# Every PR still has to pass the full CI pipeline (lint -> typecheck -> test ->
+# build -> npm audit) before it can merge.
+
+version: 2
+
+updates:
+  # ─────────────────────────────────────────────────────────────────────────
+  # npm — application dependencies
+  # ─────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 5
+    # Bump the range in package.json too, not just the lockfile — package.json
+    # is part of the template that gets copied into new projects.
+    versioning-strategy: increase
+    labels:
+      - dependencies
+      - npm
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: scope
+    cooldown:
+      default-days: 5
+      semver-patch-days: 3
+      semver-minor-days: 5
+      semver-major-days: 10
+
+    groups:
+      # Security fixes: one PR, all ecosystems' advisories, no cooldown.
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+      # Next.js and React must move together — a lone react bump with a stale
+      # next (or vice versa) produces peer-dependency breakage.
+      next-react:
+        applies-to: version-updates
+        patterns:
+          - "next"
+          - "@next/*"
+          - "eslint-config-next"
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+        update-types:
+          - minor
+          - patch
+
+      # Radix ships ~20 separately versioned packages; ungrouped this alone
+      # would be most of the weekly PR volume.
+      radix-ui:
+        applies-to: version-updates
+        patterns:
+          - "@radix-ui/*"
+        update-types:
+          - minor
+          - patch
+
+      supabase:
+        applies-to: version-updates
+        patterns:
+          - "@supabase/*"
+        update-types:
+          - minor
+          - patch
+
+      # Lint / format / test / build tooling — dev-only blast radius.
+      dev-tooling:
+        applies-to: version-updates
+        patterns:
+          - "eslint"
+          - "eslint-*"
+          - "@typescript-eslint/*"
+          - "prettier"
+          - "prettier-*"
+          - "typescript"
+          - "vitest"
+          - "@vitest/*"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "postcss"
+          - "tw-animate-css"
+        update-types:
+          - minor
+          - patch
+
+      types:
+        applies-to: version-updates
+        patterns:
+          - "@types/*"
+        update-types:
+          - minor
+          - patch
+
+      # Everything else. Listed last: a dependency joins the FIRST group it
+      # matches, so the specific groups above win over this catch-all.
+      npm-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+    ignore:
+      # next-auth v5 (Auth.js) is still beta — this project intentionally
+      # stays on v4. Minor/patch updates still come through.
+      - dependency-name: "next-auth"
+        update-types:
+          - "version-update:semver-major"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # GitHub Actions — workflow action versions
+  # ─────────────────────────────────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: "chore(ci)"
+      include: scope
+    cooldown:
+      default-days: 5
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Docker — base image in Dockerfile
+  # ─────────────────────────────────────────────────────────────────────────
+  # NOTE: the Dockerfile pins `node:22-alpine` and ci.yml pins NODE_VERSION: "22".
+  # Dependabot only sees the Dockerfile, so a major bump PR here MUST also
+  # update NODE_VERSION in .github/workflows/ci.yml or dev and prod drift apart.
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 2
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "chore(docker)"
+      include: scope
+    cooldown:
+      default-days: 7
