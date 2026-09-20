@@ -175,3 +175,30 @@ updates:
       include: scope
     cooldown:
       default-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # pip — Python helper scripts (scripts/requirements-test.txt)
+  # ─────────────────────────────────────────────────────────────────────────
+  # These are dev/test-only JWT scripts and are not part of the app runtime,
+  # but they pin exact versions (==), so without this block they silently rot.
+  - package-ecosystem: pip
+    directory: "/scripts"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: America/Sao_Paulo
+    open-pull-requests-limit: 2
+    labels:
+      - dependencies
+      - python
+    commit-message:
+      prefix: "chore(deps)"
+      include: scope
+    cooldown:
+      default-days: 5
+    groups:
+      python:
+        applies-to: version-updates
+        patterns:
+          - "*"
