@@ -112,6 +112,11 @@ const Carousel = React.forwardRef<
         return;
       }
 
+      // Vendored from shadcn/ui. This syncs Embla's (external) state into React
+      // on mount, which is exactly what react-hooks/set-state-in-effect warns
+      // about, but rewriting it around useSyncExternalStore would diverge from
+      // upstream for no behavioural gain. Scoped to this one call.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       onSelect(api);
       api.on("reInit", onSelect);
       api.on("select", onSelect);

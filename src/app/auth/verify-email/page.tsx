@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -11,51 +11,61 @@ import { useBrowserTranslation } from '@/hooks/useBrowserTranslation';
 
 function VerifyEmailContent() {
   const { t } = useBrowserTranslation();
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
-  const [message, setMessage] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-
-  const verifyEmail = useCallback(async () => {
-    try {
-      const response = await fetch('/api/auth/verify-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ token }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus('success');
-        setMessage(t('auth.verifyEmail.verified'));
-        setTimeout(() => {
-          router.push('/auth/signin');
-        }, 2000);
-      } else {
-        setStatus('error');
-        setMessage(data.message || t('auth.verifyEmail.invalidToken'));
-      }
-    } catch {
-      setStatus('error');
-      setMessage(t('auth.verifyEmail.error'));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  // Derived from the URL at first render: a missing token is already an error
+  // state, so there is nothing for an effect to correct afterwards.
+  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>(
+    token ? 'verifying' : 'error'
+  );
+  const [message, setMessage] = useState(token ? '' : t('auth.verifyEmail.invalidToken'));
 
   useEffect(() => {
     if (!token) {
-      setStatus('error');
-      setMessage(t('auth.verifyEmail.invalidToken'));
       return;
     }
 
-    verifyEmail();
+    // The state updates live inside the async closure rather than the effect
+    // body, so they run as a response to the request completing instead of
+    // synchronously on mount. `cancelled` avoids updating an unmounted form.
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const response = await fetch('/api/auth/verify-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ token }),
+        });
+
+        const data = await response.json();
+        if (cancelled) return;
+
+        if (response.ok) {
+          setStatus('success');
+          setMessage(t('auth.verifyEmail.verified'));
+          setTimeout(() => {
+            router.push('/auth/signin');
+          }, 2000);
+        } else {
+          setStatus('error');
+          setMessage(data.message || t('auth.verifyEmail.invalidToken'));
+        }
+      } catch {
+        if (cancelled) return;
+        setStatus('error');
+        setMessage(t('auth.verifyEmail.error'));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, verifyEmail]);
+  }, [token]);
 
   const handleContinue = () => {
     router.push('/auth/signin');
