@@ -53,11 +53,11 @@ This project follows the **20-Factor App** methodology (https://github.com/trent
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack, standalone output)
-- **React 19**, **TypeScript 5.9**
+- **React 19**, **TypeScript 6.0** (`types` in tsconfig is explicit — TS 6 no longer auto-includes every `@types/*` package; add global-type packages there)
 - **Tailwind CSS 4** + **shadcn/ui** (Radix primitives)
 - **Supabase** (Postgres + RLS + Storage) — no ORM, direct client
 - **NextAuth v4** (JWT strategy, credential + Google OAuth)
-- **Stripe** v21 (subscriptions, billing portal, webhooks)
+- **Stripe** v22 (subscriptions, billing portal, webhooks)
 - **Vitest 4** for testing
 
 ## Commands
@@ -176,11 +176,11 @@ Grouped and ordered by ESLint config:
 
 Separated by blank lines between groups, alphabetized within groups.
 
-### Stripe (v21)
+### Stripe (v22)
 - Client is lazy-initialized (avoids build-time errors without env vars)
 - `current_period_end` lives on `subscription.items.data[0]`, not on subscription
 - Invoice subscription ID: `invoice.parent?.subscription_details?.subscription`
-- API version: `2026-03-25.dahlia`
+- API version: `2026-08-26.dahlia` — the SDK types only accept the version it pins, so bumping the SDK means bumping this too. Monthly releases within the same name (`dahlia`) are backward-compatible; a new name (`endive`, stripe v23+) is a breaking API migration
 
 ### Auth
 - NextAuth v4 with JWT strategy and database-backed user lookups
@@ -233,7 +233,7 @@ GitHub Actions pipeline (`.github/workflows/ci.yml`) runs on push/PR to main:
 - `cooldown` delays version bumps 3-10 days after publication (supply-chain hygiene); security updates bypass it
 - `next-auth` major updates are ignored on purpose — staying on v4 until Auth.js v5 is stable
 - Dependabot alerts + security updates and secret scanning with push protection are enabled on the repo
-- Docker/Node **majors are ignored** — Dependabot only sees the Dockerfile (would leave `NODE_VERSION` in `ci.yml` behind) and has no notion of LTS (proposes odd-numbered releases). Bump Node by hand, in both places
+- Docker/Node **majors are ignored** — Dependabot only sees the Dockerfile (would leave `NODE_VERSION` in `ci.yml` behind) and has no notion of LTS (proposes odd-numbered releases). Bump Node by hand, in all three places: `Dockerfile`, `docker-compose.yml` (dev service) and `NODE_VERSION` in `ci.yml`. Use the current **Active LTS** (Node 26 "Lithium" since 2026-10-28)
 
 ## Docker
 
