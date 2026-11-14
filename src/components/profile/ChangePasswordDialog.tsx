@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Lock, Loader2, Eye, EyeOff } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { changePasswordAction } from '@/actions/profile-actions';
@@ -69,8 +69,8 @@ export function ChangePasswordDialog({ children }: ChangePasswordDialogProps) {
     }
   };
 
-  const currentPassword = form.watch('newPassword');
-  const passwordStrength = getPasswordStrength(currentPassword);
+  const newPassword = useWatch({ control: form.control, name: 'newPassword' });
+  const passwordStrength = getPasswordStrength(newPassword);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -150,7 +150,7 @@ export function ChangePasswordDialog({ children }: ChangePasswordDialogProps) {
                       </Button>
                     </div>
                   </FormControl>
-                  {currentPassword && (
+                  {newPassword && (
                     <div className="space-y-1">
                       <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                         <div

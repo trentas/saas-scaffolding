@@ -53,11 +53,11 @@ This project follows the **20-Factor App** methodology (https://github.com/trent
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack, standalone output)
-- **React 19**, **TypeScript 5.9**
+- **React 19**, **TypeScript 6.0** (`types` in tsconfig is explicit — TS 6 no longer auto-includes every `@types/*` package; add global-type packages there)
 - **Tailwind CSS 4** + **shadcn/ui** (Radix primitives)
 - **Supabase** (Postgres + RLS + Storage) — no ORM, direct client
 - **NextAuth v4** (JWT strategy, credential + Google OAuth)
-- **Stripe** v21 (subscriptions, billing portal, webhooks)
+- **Stripe** v22 (subscriptions, billing portal, webhooks)
 - **Vitest 4** for testing
 
 ## Commands
@@ -176,11 +176,11 @@ Grouped and ordered by ESLint config:
 
 Separated by blank lines between groups, alphabetized within groups.
 
-### Stripe (v21)
+### Stripe (v22)
 - Client is lazy-initialized (avoids build-time errors without env vars)
 - `current_period_end` lives on `subscription.items.data[0]`, not on subscription
 - Invoice subscription ID: `invoice.parent?.subscription_details?.subscription`
-- API version: `2026-03-25.dahlia`
+- API version: `2026-08-26.dahlia` — the SDK types only accept the version it pins, so bumping the SDK means bumping this too. Monthly releases within the same name (`dahlia`) are backward-compatible; a new name (`endive`, stripe v23+) is a breaking API migration
 
 ### Auth
 - NextAuth v4 with JWT strategy and database-backed user lookups

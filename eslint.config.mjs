@@ -11,6 +11,7 @@ const eslintConfig = [
       "*.js",
       "*.mjs",
       "next-env.d.ts",
+      "coverage/**",
     ],
   },
   ...nextConfig,
