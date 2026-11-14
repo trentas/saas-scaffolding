@@ -18,7 +18,7 @@ services:
 
   # Local development with hot reload (use instead of 'app' for dev)
   dev:
-    image: node:22-alpine
+    image: node:26-alpine
     working_dir: /app
     volumes:
       - .:/app

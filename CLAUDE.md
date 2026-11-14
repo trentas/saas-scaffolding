@@ -233,7 +233,7 @@ GitHub Actions pipeline (`.github/workflows/ci.yml`) runs on push/PR to main:
 - `cooldown` delays version bumps 3-10 days after publication (supply-chain hygiene); security updates bypass it
 - `next-auth` major updates are ignored on purpose — staying on v4 until Auth.js v5 is stable
 - Dependabot alerts + security updates and secret scanning with push protection are enabled on the repo
-- Docker/Node **majors are ignored** — Dependabot only sees the Dockerfile (would leave `NODE_VERSION` in `ci.yml` behind) and has no notion of LTS (proposes odd-numbered releases). Bump Node by hand, in both places
+- Docker/Node **majors are ignored** — Dependabot only sees the Dockerfile (would leave `NODE_VERSION` in `ci.yml` behind) and has no notion of LTS (proposes odd-numbered releases). Bump Node by hand, in all three places: `Dockerfile`, `docker-compose.yml` (dev service) and `NODE_VERSION` in `ci.yml`. Use the current **Active LTS** (Node 26 "Lithium" since 2026-10-28)
 
 ## Docker
 

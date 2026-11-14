@@ -154,9 +154,12 @@ updates:
   # ─────────────────────────────────────────────────────────────────────────
   # Docker — base image in Dockerfile
   # ─────────────────────────────────────────────────────────────────────────
-  # NOTE: the Dockerfile pins `node:22-alpine` and ci.yml pins NODE_VERSION: "22".
-  # Dependabot only sees the Dockerfile, so a major bump PR here MUST also
-  # update NODE_VERSION in .github/workflows/ci.yml or dev and prod drift apart.
+  # NOTE: Node is pinned in THREE places that must move together:
+  #   - Dockerfile          FROM node:26-alpine   (prod image)
+  #   - docker-compose.yml  image: node:26-alpine (dev service)
+  #   - ci.yml              NODE_VERSION: "26"
+  # This ecosystem only scans the Dockerfile, so a major bump PR here would
+  # leave the other two behind and let dev, CI and prod drift apart.
   - package-ecosystem: docker
     directory: "/"
     schedule:
