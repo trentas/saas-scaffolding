@@ -18,7 +18,7 @@
     "debug:level": "DEBUG_LEVEL=TRACE npm run dev"
   },
   "dependencies": {
-    "@hookform/resolvers": "^7.0.2",
+    "@hookform/resolvers": "^7.0.5",
     "@mdx-js/loader": "^3.1.1",
     "@mdx-js/react": "^3.1.1",
     "@next/mdx": "^16.4.5",
@@ -54,7 +54,7 @@
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.70.0",
     "md5": "^2.3.0",
-    "motion": "^14.9.1",
+    "motion": "^14.11.1",
     "next": "^16.4.5",
     "next-auth": "^4.24.15",
     "next-safe-action": "^8.7.3",
